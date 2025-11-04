@@ -2,11 +2,11 @@ import fetch from "node-fetch";
 import chalk from "chalk";
 
 export async function list() {
-  const GITHUB_OWNER = "koras-ui";
-  const GITHUB_REPO = "components";
-  const BRANCH = "main";
+  const GITHUB_OWNER = "TayoAdepetu";
+  const GITHUB_REPO = "Koras-ui";
+  const BRANCH = "master";
 
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/src?ref=${BRANCH}`;
+  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/components/src?ref=${BRANCH}`;
   console.log(chalk.cyan("📦 Fetching component list..."));
 
   try {
