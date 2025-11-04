@@ -1,6 +1,11 @@
 import { cn } from "../../../lib/utils"
+import { ButtonHTMLAttributes } from "react"
 
-export function Button({ className, ...props }) {
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  className?: string
+}
+
+export function Button({ className, ...props }: ButtonProps) {
   return (
     <button
       className={cn(
