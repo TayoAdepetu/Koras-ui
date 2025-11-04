@@ -24,7 +24,7 @@ npx koras-ui add button
 
 ### 1. Install or use directly via NPX
 
-You can use the CLI without installing globally:
+You can use the CLI without installing globally (ensure you have created your React app):
 
 ```bash
 npx koras-ui add button
