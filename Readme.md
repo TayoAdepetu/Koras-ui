@@ -6,7 +6,7 @@ A lightweight component scaffolding CLI, inspired by [shadcn/ui](https://ui.shad
 npx koras-ui add button
 ```
 
-> 💡 Fetches component files directly from the Koras UI GitHub repository and installs them locally under your `components/ui/` folder.
+> 💡 Fetches component files directly from the Koras UI GitHub repository and installs them locally under your `components/ui/` or `src/components/ui/` folder.
 
 ---
 
@@ -61,7 +61,7 @@ npx koras-ui add button
 ```
 
 ✅ **This will:**
-- Fetch all files from `https://github.com/koras-ui/components/tree/main/src/button`
+- Fetch all files from `https://github.com/TayoAdepetu/Koras-ui/components/tree/main/src/button`
 - Create a folder: `components/ui/button/`
 - Copy all `.tsx`, `.css`, and `.ts` files there
 
@@ -117,7 +117,7 @@ Available components:
 Clone the CLI project:
 
 ```bash
-git clone https://github.com/koras-ui/koras-ui.git
+git clone https://github.com/TayoAdepetu/Koras-ui.git
 cd koras-ui
 npm install
 ```
@@ -142,7 +142,7 @@ koras-ui add button
 ### 🧩 Component Repository Structure
 
 The components are hosted in a separate repository:  
-👉 [Koras UI Components Repo](https://github.com/koras-ui/components)
+👉 [Koras UI Components Repo](https://github.com/TayoAdepetu/Koras-ui/components)
 
 Each component should live under `src/` like so:
 
@@ -187,7 +187,7 @@ npx koras-ui add card
 CLI fetches:
 
 ```
-https://github.com/koras-ui/components/tree/main/src/card
+https://github.com/TayoAdepetu/Koras-ui/components/tree/main/src/card
 ```
 
 It saves locally:
@@ -225,13 +225,13 @@ We welcome contributions! 🙌
 
 ### To add or update a component:
 
-1. Fork the [components repository](https://github.com/koras-ui/components)
+1. Fork the [components repository](https://github.com/TayoAdepetu/Koras-ui/components)
 2. Add your component under `src/<component-name>/`
 3. Submit a Pull Request
 
 ### To contribute to the CLI itself:
 
-1. Fork this repository ([koras-ui](https://github.com/koras-ui/koras-ui))
+1. Fork this repository ([koras-ui](https://github.com/TayoAdepetu/Koras-ui))
 2. Add or improve a command
 3. Test with `npm link`
 4. Submit a Pull Request
@@ -248,9 +248,9 @@ You are free to use, modify, and distribute this CLI and its components with att
 
 ## 📞 Links
 
-- [Koras UI Components Repository](https://github.com/koras-ui/components)
+- [Koras UI Components Repository](https://github.com/TayoAdepetu/Koras-ui/components)
 - [npm Package](https://www.npmjs.com/package/koras-ui)
-- [Report Issues](https://github.com/koras-ui/koras-ui/issues)
+- [Report Issues](https://github.com/TayoAdepetu/Koras-ui/issues)
 
 ---
 
