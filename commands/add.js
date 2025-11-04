@@ -5,9 +5,9 @@ import chalk from "chalk";
 import { execSync } from "child_process";
 
 export async function add(component) {
-    const GITHUB_OWNER = "koras-ui";
-    const GITHUB_REPO = "components";
-    const BRANCH = "main";
+    const GITHUB_OWNER = "TayoAdepetu";
+    const GITHUB_REPO = "Koras-ui";
+    const BRANCH = "master";
 
     const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/src/${component}?ref=${BRANCH}`;
 
