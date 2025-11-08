@@ -9,29 +9,37 @@ const program = new Command();
 program
   .name("koras-ui")
   .description("Koras UI component CLI")
-  .version("1.1.0");
+  .version("1.2.0");
 
-// --- Register commands ---
+// koras-ui init
 program
   .command("init")
-  .description("Setup Tailwind for Koras UI")
+  .description("Setup TailwindCSS for Koras UI")
   .action(async () => {
     await init();
   });
 
+// koras-ui add <component> [options]
 program
   .command("add <component>")
-  .description("Add a Koras UI component to your project")
-  .action(async (component) => {
-    await add(component);
+  .description("Add a UI component to your project")
+  .option("--owner <owner>", "GitHub repo owner")
+  .option("--repo <repo>", "GitHub repo name")
+  .option("--branch <branch>", "GitHub branch name")
+  .option("--local <path>", "Local folder to import component from")
+  .action(async (component, options) => {
+    await add(component, options);
   });
 
+// koras-ui list
 program
   .command("list")
-  .description("List all available components")
-  .action(async () => {
-    await list();
+  .description("List available components")
+  .option("--owner <owner>", "GitHub owner")
+  .option("--repo <repo>", "GitHub repo")
+  .option("--branch <branch>", "GitHub branch")
+  .action(async (options) => {
+    await list(options);
   });
 
-// --- Parse CLI args ---
 program.parse(process.argv);
