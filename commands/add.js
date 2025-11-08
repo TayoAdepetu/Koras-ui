@@ -9,7 +9,7 @@ export async function add(component) {
     const GITHUB_REPO = "Koras-ui";
     const BRANCH = "master";
 
-    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/components/src/${component}?ref=${BRANCH}`;
+    const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/components/ui/${component}?ref=${BRANCH}`;
 
     // Detect if the project uses a src folder
     const hasSrcFolder = fs.existsSync(path.resolve("src"));
