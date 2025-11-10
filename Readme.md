@@ -6,7 +6,7 @@ A lightweight component scaffolding CLI, inspired by [shadcn/ui](https://ui.shad
 npx koras-ui add button
 ```
 
-> 💡 Fetches component files directly from GitHub or from a local directory and installs them into your project under `components/ui/` or `src/components/ui/`.
+> Fetches component files directly from GitHub or from a local directory and installs them into your project under `components/ui/` or `src/components/ui/`.
 
 ---
 
