@@ -4,19 +4,19 @@ import path from "path";
 import chalk from "chalk";
 
 export async function init() {
-    console.log(chalk.cyan("🔍 Checking for Tailwind setup..."));
+    console.log(chalk.cyan("Checking for Tailwind setup..."));
 
     const hasTailwind = fs.existsSync("tailwind.config.js");
     const hasPostCSS = fs.existsSync("postcss.config.js");
 
     // Install Tailwind and dependencies if missing
     if (!hasTailwind) {
-        console.log(chalk.yellow("⚙️ Installing Tailwind CSS..."));
+        console.log(chalk.yellow("Installing Tailwind CSS..."));
         execSync("npm install -D tailwindcss postcss autoprefixer", {
             stdio: "inherit",
         });
 
-        console.log(chalk.yellow("🛠️ Generating Tailwind config..."));
+        console.log(chalk.yellow("Generating Tailwind config..."));
         execSync("npx tailwindcss init -p", { stdio: "inherit" });
     }
 
@@ -35,7 +35,7 @@ export async function init() {
   ],`
             );
             fs.writeFileSync(configPath, content);
-            console.log(chalk.green("✅ Added content paths to tailwind.config.js"));
+            console.log(chalk.green("Added content paths to tailwind.config.js"));
         }
     }
 
@@ -56,10 +56,10 @@ export async function init() {
   --radius: 0.5rem;
 }`
         );
-        console.log(chalk.green("✅ Created src/styles/globals.css"));
+        console.log(chalk.green("Created src/styles/globals.css"));
     }
 
-    console.log(chalk.green("\n🎉 Koras UI initialized successfully!"));
+    console.log(chalk.green("\n Koras UI initialized successfully!"));
     console.log(chalk.white(`
 Next steps:
 1. Import your styles in your app:

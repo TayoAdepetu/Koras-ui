@@ -17,7 +17,7 @@ async function ensureDeps() {
 
   if (missing.length === 0) return;
 
-  console.log(chalk.yellow(`⚙️ Installing dependencies: ${missing.join(", ")}`));
+  console.log(chalk.yellow(`Installing dependencies: ${missing.join(", ")}`));
 
   const useYarn = fs.existsSync("yarn.lock");
   const usePnpm = fs.existsSync("pnpm-lock.yaml");
@@ -30,9 +30,9 @@ async function ensureDeps() {
 
   try {
     execSync(cmd, { stdio: "inherit" });
-    console.log(chalk.green("✅ Dependencies installed."));
+    console.log(chalk.green("Dependencies installed."));
   } catch {
-    console.log(chalk.red("❌ Failed automatic install. Run manually:"));
+    console.log(chalk.red("Failed automatic install. Run manually:"));
     console.log(chalk.white(`   ${cmd}`));
   }
 }
@@ -42,7 +42,7 @@ async function ensureUtils(baseDir) {
 
   if (fs.existsSync(utilsPath)) return;
 
-  console.log(chalk.cyan(`📦 Adding helper: ${baseDir}/lib/utils.ts`));
+  console.log(chalk.cyan(`Adding helper: ${baseDir}/lib/utils.ts`));
 
   const content = `
 import { clsx, type ClassValue } from "clsx";
@@ -54,12 +54,12 @@ export function cn(...inputs: ClassValue[]) {
 `;
 
   await fs.outputFile(utilsPath, content);
-  console.log(chalk.green("✅ Added utils.ts helper"));
+  console.log(chalk.green("Added utils.ts helper"));
 }
 
 
 export async function add(component, options = {}) {
-  // ✅ 1. LOCAL OVERRIDE
+  // 1. LOCAL OVERRIDE
   if (options.local) {
     const sourcePath = path.resolve(options.local);
     const hasSrc = fs.existsSync(path.resolve("src"));
@@ -69,27 +69,27 @@ export async function add(component, options = {}) {
     console.log(chalk.cyan(`📦 Importing "${component}" from local folder...`));
 
     if (!fs.existsSync(sourcePath)) {
-      console.error(chalk.red(`❌ Local path does not exist:`));
+      console.error(chalk.red(`Local path does not exist:`));
       console.error(chalk.red(`   ${sourcePath}`));
       process.exit(1);
     }
 
     await fs.copy(sourcePath, destPath);
-    console.log(chalk.green(`✅ Imported component from ${sourcePath}`));
+    console.log(chalk.green(`Imported component from ${sourcePath}`));
 
     await ensureUtils(baseDir);
     await ensureDeps();
     return;
   }
 
-  // ✅ 2. GITHUB FETCH MODE
+  // 2. GITHUB FETCH MODE
   const GITHUB_OWNER = options.owner || "TayoAdepetu";
   const GITHUB_REPO = options.repo || "Koras-ui";
   const BRANCH = options.branch || "master";
 
   const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/components/ui/${component}?ref=${BRANCH}`;
 
-  console.log(chalk.cyan(`📦 Fetching "${component}" from GitHub...`));
+  console.log(chalk.cyan(`Fetching "${component}" from GitHub...`));
   console.log(chalk.dim(apiUrl));
 
   const hasSrcFolder = fs.existsSync(path.resolve("src"));
@@ -102,7 +102,7 @@ export async function add(component, options = {}) {
     });
 
     if (!res.ok) {
-      console.error(chalk.red(`❌ Component "${component}" not found in:`));
+      console.error(chalk.red(` Component "${component}" not found in:`));
       console.error(chalk.red(`   ${GITHUB_OWNER}/${GITHUB_REPO}@${BRANCH}`));
       process.exit(1);
     }
@@ -114,7 +114,7 @@ export async function add(component, options = {}) {
       if (file.type === "file") {
         const content = await (await fetch(file.download_url)).text();
         await fs.outputFile(path.join(destinationDir, file.name), content);
-        console.log(chalk.green(`✅ Added ${file.name}`));
+        console.log(chalk.green(`Added ${file.name}`));
       }
     }
 
@@ -122,10 +122,10 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(`\n✨ Installed "${component}" into ${baseDir}/components/ui/${component}/`)
+      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
     );
 
   } catch (err) {
-    console.error(chalk.red("❌ Error fetching component:"), err.message);
+    console.error(chalk.red("Error fetching component:"), err.message);
   }
 }

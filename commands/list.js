@@ -7,7 +7,7 @@ export async function list(options = {}) {
   const BRANCH = options.branch || "master";
 
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/components/ui?ref=${BRANCH}`;
-  console.log(chalk.cyan("📦 Fetching component list..."));
+  console.log(chalk.cyan("Fetching component list..."));
 
   try {
     const res = await fetch(url, {
@@ -15,7 +15,7 @@ export async function list(options = {}) {
     });
 
     if (!res.ok) {
-      console.error(chalk.red("❌ Unable to fetch component list."));
+      console.error(chalk.red("Unable to fetch component list."));
       return;
     }
 
