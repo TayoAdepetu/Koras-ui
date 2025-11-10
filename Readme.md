@@ -12,14 +12,14 @@ npx koras-ui add button
 
 ## ✨ Features
 
-- 🧱 **Add UI components instantly** via a single command
-- ☁️ **Fetch components** from any public GitHub repository
-- 🗂️ **Import components** from a local folder (`--local`)
-- 📂 **Supports multi-file components** (TSX, CSS, TS, etc.)
-- ⚙️ **Customizable source repo** (`--owner`, `--repo`, `--branch`)
-- 🧩 **List available components** dynamically
-- 🛠️ **Automatic creation** of helper utilities (`cn`)
-- 🔧 **Auto-installs** required dependencies (`clsx`, `tailwind-merge`)
+- **Add UI components instantly** via a single command
+- **Fetch components** from any public GitHub repository
+- **Import components** from a local folder (`--local`)
+- **Supports multi-file components** (TSX, CSS, TS, etc.)
+- **Customizable source repo** (`--owner`, `--repo`, `--branch`)
+- **List available components** dynamically
+- **Automatic creation** of helper utilities (`cn`)
+- **Auto-installs** required dependencies (`clsx`, `tailwind-merge`)
 
 ---
 
@@ -49,7 +49,7 @@ koras-ui add button
 
 ## 🧭 CLI Commands
 
-### 📦 `add <component>`
+### `add <component>`
 
 Add a component into your project.
 
@@ -57,7 +57,7 @@ Add a component into your project.
 npx koras-ui add <component>
 ```
 
-#### ✅ Default Example (Koras UI repo)
+#### Default Example (Koras UI repo)
 
 ```bash
 npx koras-ui add button
@@ -93,12 +93,12 @@ src/
 
 ---
 
-### 🔥 Advanced: Fetch from ANY GitHub repo
+### Advanced: Fetch from ANY GitHub repo
 
 You are **not limited to Koras UI**.  
 You can fetch components from any public GitHub repository.
 
-#### ✅ Example: Use someone else's component repo
+#### Example: Use someone else's component repo
 
 ```bash
 npx koras-ui add button --owner JohnDoe --repo my-ui-library
@@ -110,25 +110,25 @@ This fetches from:
 https://github.com/JohnDoe/my-ui-library/tree/main/components/src/button
 ```
 
-#### ✅ Example: Use a different branch
+#### Example: Use a different branch
 
 ```bash
 npx koras-ui add card --branch dev
 ```
 
-#### ✅ Example: Different owner + repo + branch at once
+#### Example: Different owner + repo + branch at once
 
 ```bash
 npx koras-ui add modal --owner coder123 --repo awesome-ui --branch next
 ```
 
-#### ✅ Use Case
+#### Use Case
 
 You already have UI components from previous projects or other OSS libraries—you can reuse them instantly without copy/paste.
 
 ---
 
-### 💾 Import Components From a Local Directory (`--local`)
+### Import Components From a Local Directory (`--local`)
 
 If you have components stored on your machine, import them directly:
 
@@ -137,15 +137,15 @@ npx koras-ui add navbar --local C:/projects/old-app/src/components/navbar
 ```
 
 **Works with:**
-- ✅ Absolute paths
-- ✅ Relative paths
-- ✅ Multi-file directories
-- ✅ No GitHub
-- ✅ No internet
-- ✅ No constraints
-- ✅ Perfect for reusing personal components
+- Absolute paths
+- Relative paths
+- Multi-file directories
+- No GitHub
+- No internet
+- No constraints
+- Perfect for reusing personal components
 
-#### ✅ Example Use Case
+#### Example Use Case
 
 You have a project named "MyPortfolio2024" containing a nice card component:
 
@@ -157,7 +157,7 @@ That's it.
 
 ---
 
-### 📋 `list`
+### `list`
 
 List available components from any GitHub repository:
 
@@ -196,7 +196,7 @@ npx koras-ui list --owner JohnDoe --repo my-ui-library
 
 ## 🧑‍💻 For Open-Source Contributors
 
-### 🏗️ Project Setup
+### Project Setup
 
 Clone the CLI project:
 
@@ -223,7 +223,7 @@ koras-ui add button
 
 ---
 
-### 🧩 Component Repository Structure
+### Component Repository Structure
 
 Components live under:
 
@@ -251,7 +251,7 @@ components/src/button/*
 
 ---
 
-### 📁 CLI Project Structure
+### CLI Project Structure
 
 ```
 koras-ui/
@@ -290,7 +290,7 @@ npx koras-ui add table --local ../my-old-project/src/components/table
 
 ## 🧑‍🤝‍🧑 Contributing
 
-We welcome contributions! 🙌
+We welcome contributions!
 
 ### For components:
 
@@ -317,9 +317,9 @@ You may copy, modify, and distribute this software with attribution.
 
 ## 📞 Links
 
-- 📦 **GitHub Components Repo** → [https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src](https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src)
-- 💻 **CLI GitHub Repo** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
-- 🐍 **NPM Package** → [https://www.npmjs.com/package/koras-ui](https://www.npmjs.com/package/koras-ui)
+- **GitHub Components Repo** → [https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src](https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src)
+- **CLI GitHub Repo** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
+- **NPM Package** → [https://www.npmjs.com/package/koras-ui](https://www.npmjs.com/package/koras-ui)
 
 ---
 
