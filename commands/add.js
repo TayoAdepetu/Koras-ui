@@ -80,23 +80,53 @@ async function fetchShadcnPath(component, owner, repo, branch) {
 }
 
 /* ----------------------------
+ Case-insensitive path resolver
+---------------------------- */
+function resolveCaseInsensitive(targetPath) {
+  const normalized = path.normalize(targetPath);
+  const parts = normalized.split(path.sep);
+
+  // Start path root (like C:\)
+  let currentPath = parts[0] + path.sep;
+
+  for (let i = 1; i < parts.length; i++) {
+    const segment = parts[i];
+    if (!fs.existsSync(currentPath)) return null;
+
+    const entries = fs.readdirSync(currentPath);
+    const match = entries.find(
+      (entry) => entry.toLowerCase() === segment.toLowerCase()
+    );
+
+    if (!match) return null;
+
+    currentPath = path.join(currentPath, match);
+  }
+
+  return currentPath;
+}
+
+/* ----------------------------
  ADD COMMAND (supports ShadCN)
 ---------------------------- */
 export async function add(component, options = {}) {
   // Local override
-  // Local override
   if (options.local) {
-    const sourcePath = path.resolve(path.normalize(options.local)); // <- normalize slashes
+    const inputPath = path.normalize(options.local);
+    const sourcePath = resolveCaseInsensitive(inputPath);
+
+    console.log(chalk.cyan(`Importing from local folder: ${inputPath}`));
+
+    if (!sourcePath) {
+      console.error(chalk.red("Local path not found (case-insensitive search failed):"));
+      console.error(chalk.red(`   ${inputPath}`));
+      process.exit(1);
+    }
+
     const baseDir = fs.existsSync("src") ? "src" : ".";
     const destPath = path.resolve(`${baseDir}/components/ui/${component}`);
 
-    console.log(chalk.cyan(`Importing from local folder: ${sourcePath}`));
-
-    if (!fs.existsSync(sourcePath)) {
-      console.error(chalk.red(`Local path not found. Make sure it exists:`));
-      console.error(chalk.red(`   ${sourcePath}`));
-      process.exit(1);
-    }
+    console.log(chalk.green(`Resolved actual path: ${sourcePath}`));
 
     await fs.copy(sourcePath, destPath);
     await ensureUtils(baseDir);
