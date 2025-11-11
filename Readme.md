@@ -151,7 +151,13 @@ You can reuse components from past projects, starter kits, open-source libraries
 You can import directly from your computer:
 
 ```bash
-npx koras-ui add navbar --local C:/projects/old-app/src/components/navbar
+
+# Works with forward slashes
+npx koras-ui add NeutralButton --local C:/Users/User/projects/old-app/src/components/Common/Buttons/NeutralButton
+
+# Works with backslashes too
+npx koras-ui add NeutralButton --local C:\Users\User\projects\old-app\src\components\Common\Buttons\NeutralButton
+
 ```
 
 - Works offline

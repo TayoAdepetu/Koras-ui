@@ -84,15 +84,16 @@ async function fetchShadcnPath(component, owner, repo, branch) {
 ---------------------------- */
 export async function add(component, options = {}) {
   // Local override
+  // Local override
   if (options.local) {
-    const sourcePath = path.resolve(options.local);
+    const sourcePath = path.resolve(path.normalize(options.local)); // <- normalize slashes
     const baseDir = fs.existsSync("src") ? "src" : ".";
     const destPath = path.resolve(`${baseDir}/components/ui/${component}`);
 
-    console.log(chalk.cyan(`Importing from local folder: ${options.local}`));
+    console.log(chalk.cyan(`Importing from local folder: ${sourcePath}`));
 
     if (!fs.existsSync(sourcePath)) {
-      console.error(chalk.red(`Local path not found:`));
+      console.error(chalk.red(`Local path not found. Make sure it exists:`));
       console.error(chalk.red(`   ${sourcePath}`));
       process.exit(1);
     }
@@ -131,7 +132,9 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.v3+json" } });
+    const res = await fetch(apiUrl, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+    });
     if (!res.ok) {
       console.error(chalk.red(`Component "${component}" not found in:`));
       console.error(chalk.red(`   ${owner}/${repo}@${branch}`));
@@ -153,7 +156,9 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
+      chalk.bold.green(
+        `\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`
+      )
     );
   } catch (err) {
     console.error(chalk.red("Error fetching component:"), err.message);
