@@ -2,7 +2,7 @@ export default {
   branches: [
     "master",
     { name: "beta", prerelease: true },
-    { name: "experimental", prerelease: "next" }
+    { name: "experimental", prerelease: "experimental" }
   ],
   plugins: [
     "@semantic-release/commit-analyzer",

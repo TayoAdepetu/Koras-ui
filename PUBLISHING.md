@@ -10,7 +10,7 @@ Koras UI uses [semantic-release](https://github.com/semantic-release/semantic-re
 - No `npm publish`
 - Versions are created automatically
 - Releases are generated from commit messages
-- Stable + beta + next channels are supported
+- Stable + beta + experimental channels are supported
 
 ---
 
@@ -20,7 +20,7 @@ Koras UI uses [semantic-release](https://github.com/semantic-release/semantic-re
 |--------|---------|---------|
 | `master` | Stable production releases | `latest` |
 | `beta` | Public beta testing | `beta` |
-| `experimental` | Experimental / nightly builds | `next` |
+| `experimental` | Experimental / nightly builds | `experimental` |
 
 ---
 
@@ -95,7 +95,7 @@ npm install koras-ui@beta
 
 ---
 
-### Next / nightly releases
+### Experimental / nightly releases
 
 Push to `experimental`:
 
@@ -108,13 +108,13 @@ git push
 **Publish as:**
 
 ```
-1.6.0-next.1
+1.6.0-experimental.1
 ```
 
 **Installable via:**
 
 ```bash
-npm install koras-ui@next
+npm install koras-ui@experimental
 ```
 
 ---
@@ -166,7 +166,7 @@ feature branch
     ↓
     merge to beta → semantic-release → npm publish (beta)
     ↓
-    merge to experimental → semantic-release → npm publish (next)
+    merge to experimental → semantic-release → npm publish (experimental)
 ```
 
 ---
