@@ -148,15 +148,27 @@ You can reuse components from past projects, starter kits, open-source libraries
 
 ### Import Components From a Local Directory (`--local`)
 
-You can import directly from your computer:
+You can import a file directly from your computer:
 
 ```bash
 
 # Works with forward slashes
-npx koras-ui add NeutralButton --local C:/Users/User/projects/old-app/src/components/Common/Buttons/NeutralButton
+npx koras-ui add NeutralButton.tsx --local C:/Users/User/projects/old-app/src/components/Common/Buttons/NeutralButton.tsx
 
 # Works with backslashes too
-npx koras-ui add NeutralButton --local C:\Users\User\projects\old-app\src\components\Common\Buttons\NeutralButton
+npx koras-ui add NeutralButton.js --local C:\Users\User\projects\old-app\src\components\Common\Buttons\NeutralButton.js
+
+```
+
+You can import a folder directly from your computer:
+
+```bash
+
+# Works with forward slashes
+npx koras-ui add Buttons --local C:/Users/User/projects/old-app/src/components/Common/Buttons
+
+# Works with backslashes too
+npx koras-ui add Buttons --local C:\Users\User\projects\old-app\src\components\Common\Buttons
 
 ```
 
