@@ -9,7 +9,7 @@ const program = new Command();
 program
   .name("koras-ui")
   .description("Koras UI component CLI")
-  .version("1.2.0");
+  .version("1.3.0");
 
 // koras-ui init
 program
@@ -19,14 +19,14 @@ program
     await init();
   });
 
-// koras-ui add <component> [options]
+// koras-ui add <component>
 program
   .command("add <component>")
   .description("Add a UI component to your project")
   .option("--owner <owner>", "GitHub repo owner")
   .option("--repo <repo>", "GitHub repo name")
   .option("--branch <branch>", "GitHub branch name")
-  .option("--local <path>", "Local folder to import component from")
+  .option("--local <path>", "Local folder to import a component from")
   .action(async (component, options) => {
     await add(component, options);
   });
@@ -35,9 +35,9 @@ program
 program
   .command("list")
   .description("List available components")
-  .option("--owner <owner>", "GitHub owner")
-  .option("--repo <repo>", "GitHub repo")
-  .option("--branch <branch>", "GitHub branch")
+  .option("--owner <owner>", "GitHub repo owner")
+  .option("--repo <repo>", "GitHub repo name")
+  .option("--branch <branch>", "GitHub branch name")
   .action(async (options) => {
     await list(options);
   });

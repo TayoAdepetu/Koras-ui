@@ -6,20 +6,21 @@ A lightweight component scaffolding CLI, inspired by [shadcn/ui](https://ui.shad
 npx koras-ui add button
 ```
 
-> Fetches component files directly from GitHub or from a local directory and installs them into your project under `components/ui/` or `src/components/ui/`.
+> Fetches component files directly from GitHub, ShadCN UI, or from a local directory and installs them into your project under `components/ui/` or `src/components/ui/`.
 
 ---
 
 ## ✨ Features
 
 - **Add UI components instantly** via a single command
-- **Fetch components** from any public GitHub repository
+- **Fetch Koras UI components** from the default GitHub repo
+- **Fetch ShadCN components** via `registry.json` (`--owner shadcn --repo ui`)
+- **Fetch components** from any public GitHub repository (`--owner`, `--repo`, `--branch`)
 - **Import components** from a local folder (`--local`)
 - **Supports multi-file components** (TSX, CSS, TS, etc.)
-- **Customizable source repo** (`--owner`, `--repo`, `--branch`)
-- **List available components** dynamically
-- **Automatic creation** of helper utilities (`cn`)
+- **Automatic creation** of helper utilities (`lib/utils.ts`)
 - **Auto-installs** required dependencies (`clsx`, `tailwind-merge`)
+- **Dynamic listing** of available components from Koras UI, ShadCN UI, or any GitHub repo
 
 ---
 
@@ -51,7 +52,7 @@ koras-ui add button
 
 ### `add <component>`
 
-Add a component into your project.
+Add a component to your project.
 
 ```bash
 npx koras-ui add <component>
@@ -64,11 +65,11 @@ npx koras-ui add button
 ```
 
 **This will:**
-- Fetch all files from: `https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src/button`
+- Fetch all files from: `https://github.com/TayoAdepetu/Koras-ui/tree/master/components/ui/button`
 - Detect if your project uses a `src` folder
 - Copy files into the correct location
-- Ensure `lib/utils.ts` exists
-- Install missing dependencies
+- Create `lib/utils.ts` if missing
+- Install missing dependencies automatically
 
 **Result (no src folder):**
 
@@ -93,21 +94,38 @@ src/
 
 ---
 
-### Advanced: Fetch from ANY GitHub repo
+### Fetching ShadCN Components
 
-You are **not limited to Koras UI**.  
-You can fetch components from any public GitHub repository.
+Koras UI now supports importing official ShadCN components using their `registry.json`.
 
-#### Example: Use someone else's component repo
+**Fetch a ShadCN component:**
+
+```bash
+npx koras-ui add alert --owner shadcn --repo ui --branch main
+```
+
+This uses ShadCN's `registry.json` to resolve the actual file paths.
+
+- No need to know where ShadCN stores files
+- Supports multi-file ShadCN components
+- Works with any ShadCN fork
+
+---
+
+### Fetching from ANY GitHub Repo
+
+You are **not limited to Koras UI or ShadCN**.
+
+#### Example: Fetch from someone else's library
 
 ```bash
 npx koras-ui add button --owner JohnDoe --repo my-ui-library
 ```
 
-This fetches from:
+Fetches from:
 
 ```
-https://github.com/JohnDoe/my-ui-library/tree/main/components/src/button
+https://github.com/JohnDoe/my-ui-library/tree/main/components/ui/button
 ```
 
 #### Example: Use a different branch
@@ -116,7 +134,7 @@ https://github.com/JohnDoe/my-ui-library/tree/main/components/src/button
 npx koras-ui add card --branch dev
 ```
 
-#### Example: Different owner + repo + branch at once
+#### Example: Use owner, repo, and branch at once
 
 ```bash
 npx koras-ui add modal --owner coder123 --repo awesome-ui --branch next
@@ -124,48 +142,39 @@ npx koras-ui add modal --owner coder123 --repo awesome-ui --branch next
 
 #### Use Case
 
-You already have UI components from previous projects or other OSS libraries—you can reuse them instantly without copy/paste.
+You can reuse components from past projects, starter kits, open-source libraries, etc.
 
 ---
 
 ### Import Components From a Local Directory (`--local`)
 
-If you have components stored on your machine, import them directly:
+You can import directly from your computer:
 
 ```bash
 npx koras-ui add navbar --local C:/projects/old-app/src/components/navbar
 ```
 
-**Works with:**
-- Absolute paths
-- Relative paths
-- Multi-file directories
-- No GitHub
-- No internet
-- No constraints
+- Works offline
+- Copies the entire folder
 - Perfect for reusing personal components
 
-#### Example Use Case
-
-You have a project named "MyPortfolio2024" containing a nice card component:
+**Example:**
 
 ```bash
 npx koras-ui add card --local ../MyPortfolio2024/src/components/card
 ```
 
-That's it.
-
 ---
 
 ### `list`
 
-List available components from any GitHub repository:
+List available components.
 
 ```bash
 npx koras-ui list
 ```
 
-**From Koras UI (default repo):**
+#### List from Koras UI (default)
 
 ```
 Available components:
@@ -175,7 +184,15 @@ Available components:
 - input
 ```
 
-**From another repo:**
+#### List ShadCN components
+
+```bash
+npx koras-ui list --owner shadcn --repo ui
+```
+
+This lists all components found in ShadCN's `registry.json`.
+
+#### List from ANY GitHub repo
 
 ```bash
 npx koras-ui list --owner JohnDoe --repo my-ui-library
@@ -187,10 +204,10 @@ npx koras-ui list --owner JohnDoe --repo my-ui-library
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `--owner` | GitHub username or org | `--owner JohnDoe` |
-| `--repo` | GitHub repository name | `--repo my-ui` |
-| `--branch` | Branch to fetch from | `--branch dev` |
-| `--local` | Import from local folder instead of GitHub | `--local ./path/to/component` |
+| `--owner` | GitHub username or org | `--owner shadcn` |
+| `--repo` | GitHub repository name | `--repo ui` |
+| `--branch` | Branch to fetch from | `--branch main` |
+| `--local` | Import from local folder | `--local ../components/button` |
 
 ---
 
@@ -198,7 +215,7 @@ npx koras-ui list --owner JohnDoe --repo my-ui-library
 
 ### Project Setup
 
-Clone the CLI project:
+Clone the CLI:
 
 ```bash
 git clone https://github.com/TayoAdepetu/Koras-ui.git
@@ -225,11 +242,9 @@ koras-ui add button
 
 ### Component Repository Structure
 
-Components live under:
-
 ```
 components/
-  src/
+  ui/
     button/
       index.tsx
       styles.css
@@ -237,16 +252,16 @@ components/
       index.tsx
 ```
 
-When running:
+When you run:
 
 ```bash
 npx koras-ui add button
 ```
 
-The CLI fetches:
+Koras UI fetches:
 
 ```
-components/src/button/*
+components/ui/button/*
 ```
 
 ---
@@ -271,6 +286,7 @@ koras-ui/
 ```bash
 npx koras-ui add card
 npx koras-ui add dialog --branch dev
+npx koras-ui add alert --owner shadcn --repo ui
 npx koras-ui add input --owner Someone --repo their-ui-library
 npx koras-ui add table --local ../my-old-project/src/components/table
 ```
@@ -282,7 +298,7 @@ npx koras-ui add table --local ../my-old-project/src/components/table
 - [ ] Component dependency support
 - [ ] `koras.config.json` for global defaults
 - [ ] Custom output directories
-- [ ] Interactive UI (pick components from a menu)
+- [ ] Interactive component picker (UI)
 - [ ] Version pinning (`koras-ui@1.3.0`)
 - [ ] Local caching for faster installs
 
@@ -292,16 +308,16 @@ npx koras-ui add table --local ../my-old-project/src/components/table
 
 We welcome contributions!
 
-### For components:
+### For component development:
 
 1. Fork the [components repo](https://github.com/TayoAdepetu/Koras-ui)
-2. Add a new folder inside `components/src/<component>`
+2. Add a new folder inside `components/ui/<component>`
 3. Submit a PR
 
 ### For CLI development:
 
 1. Fork [this repo](https://github.com/TayoAdepetu/Koras-ui)
-2. Add/improve commands
+2. Add or improve commands
 3. Test using `npm link`
 4. Submit a PR
 
@@ -317,7 +333,7 @@ You may copy, modify, and distribute this software with attribution.
 
 ## 📞 Links
 
-- **GitHub Components Repo** → [https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src](https://github.com/TayoAdepetu/Koras-ui/tree/main/components/src)
+- **GitHub Components Repo** → [https://github.com/TayoAdepetu/Koras-ui/tree/master/components/ui](https://github.com/TayoAdepetu/Koras-ui/tree/master/components/ui)
 - **CLI GitHub Repo** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
 - **NPM Package** → [https://www.npmjs.com/package/koras-ui](https://www.npmjs.com/package/koras-ui)
 
