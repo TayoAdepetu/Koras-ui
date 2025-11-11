@@ -1,4 +1,4 @@
-# ✅ Koras UI Release Process
+# Koras UI Release Process
 
 ## Overview
 
@@ -6,15 +6,15 @@ Koras UI uses [semantic-release](https://github.com/semantic-release/semantic-re
 
 **This means:**
 
-- ✅ No `npm version`
-- ✅ No `npm publish`
-- ✅ Versions are created automatically
-- ✅ Releases are generated from commit messages
-- ✅ Stable + beta + next channels are supported
+- No `npm version`
+- No `npm publish`
+- Versions are created automatically
+- Releases are generated from commit messages
+- Stable + beta + next channels are supported
 
 ---
 
-## 🌿 Branch Structure
+## Branch Structure
 
 | Branch | Purpose | npm Tag |
 |--------|---------|---------|
@@ -24,7 +24,7 @@ Koras UI uses [semantic-release](https://github.com/semantic-release/semantic-re
 
 ---
 
-## 📝 Commit Message Rules
+## Commit Message Rules
 
 Semantic-release uses [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -58,9 +58,9 @@ BREAKING CHANGE: old API removed
 
 ---
 
-## 🚀 Release Channels
+## Release Channels
 
-### ✅ Stable release (`master`)
+### Stable release (`master`)
 
 When you merge to `master`, the CI will:
 
@@ -71,7 +71,7 @@ When you merge to `master`, the CI will:
 
 ---
 
-### 🧪 Beta releases
+### Beta releases
 
 Merge into `beta`:
 
@@ -95,7 +95,7 @@ npm install koras-ui@beta
 
 ---
 
-### 🔬 Next / nightly releases
+### Next / nightly releases
 
 Push to `experimental`:
 
@@ -119,7 +119,7 @@ npm install koras-ui@next
 
 ---
 
-## 🧪 Manual Testing Without Publishing
+## Manual Testing Without Publishing
 
 Install directly from GitHub:
 
@@ -129,7 +129,7 @@ npm install github:TayoAdepetu/Koras-ui#beta
 
 ---
 
-## 📦 Creating a New Component Release
+## Creating a New Component Release
 
 1. Make component changes
 2. Commit using Conventional Commit format
@@ -147,17 +147,17 @@ npm install github:TayoAdepetu/Koras-ui#beta
 
 ---
 
-## 📜 Viewing Release History
+## Viewing Release History
 
 Semantic-release updates:
 
-- ✅ `CHANGELOG.md`
-- ✅ [GitHub Releases](https://github.com/TayoAdepetu/Koras-ui/releases)
-- ✅ npm versions
+- `CHANGELOG.md`
+- [GitHub Releases](https://github.com/TayoAdepetu/Koras-ui/releases)
+- npm versions
 
 ---
 
-## 🔄 Workflow Diagram
+## Workflow Diagram
 
 ```
 feature branch
@@ -171,7 +171,7 @@ feature branch
 
 ---
 
-## 💡 Best Practices
+## Best Practices
 
 1. **Always use conventional commits** - This determines the version bump
 2. **Test in beta first** - Before promoting to stable
@@ -181,7 +181,7 @@ feature branch
 
 ---
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### My commit didn't trigger a release
 
@@ -203,12 +203,12 @@ docs: update README [skip ci]
 
 ---
 
-## 📞 Links
+## Links
 
-- 📚 **Conventional Commits** → [https://www.conventionalcommits.org](https://www.conventionalcommits.org)
-- 🤖 **Semantic Release** → [https://github.com/semantic-release/semantic-release](https://github.com/semantic-release/semantic-release)
-- 📦 **npm Package** → [https://www.npmjs.com/package/koras-ui](https://www.npmjs.com/package/koras-ui)
-- 💻 **GitHub Repository** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
+- **Conventional Commits** → [https://www.conventionalcommits.org](https://www.conventionalcommits.org)
+- **Semantic Release** → [https://github.com/semantic-release/semantic-release](https://github.com/semantic-release/semantic-release)
+- **npm Package** → [https://www.npmjs.com/package/koras-ui](https://www.npmjs.com/package/koras-ui)
+- **GitHub Repository** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
 
 ---
 
