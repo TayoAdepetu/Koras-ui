@@ -10,7 +10,7 @@ npx koras-ui add button
 
 ---
 
-## ✨ Features
+## Features
 
 - **Add UI components instantly** via a single command
 - **Fetch Koras UI components** from the default GitHub repo
@@ -48,7 +48,7 @@ koras-ui add button
 
 ---
 
-## 🧭 CLI Commands
+## CLI Commands
 
 ### `add <component>`
 
@@ -200,7 +200,7 @@ npx koras-ui list --owner JohnDoe --repo my-ui-library
 
 ---
 
-## ⚙️ Options Summary
+## Options Summary
 
 | Option | Description | Example |
 |--------|-------------|---------|
@@ -281,7 +281,7 @@ koras-ui/
 
 ---
 
-## ⚡ Example Workflow
+## Example Workflow
 
 ```bash
 npx koras-ui add card
@@ -293,7 +293,7 @@ npx koras-ui add table --local ../my-old-project/src/components/table
 
 ---
 
-## 💡 Roadmap
+## Roadmap
 
 - [ ] Component dependency support
 - [ ] `koras.config.json` for global defaults
@@ -323,7 +323,7 @@ We welcome contributions!
 
 ---
 
-## ⚖️ License
+## License
 
 **MIT © Koras UI**
 
@@ -331,7 +331,7 @@ You may copy, modify, and distribute this software with attribution.
 
 ---
 
-## 📞 Links
+## Links
 
 - **GitHub Components Repo** → [https://github.com/TayoAdepetu/Koras-ui/tree/master/components/ui](https://github.com/TayoAdepetu/Koras-ui/tree/master/components/ui)
 - **CLI GitHub Repo** → [https://github.com/TayoAdepetu/Koras-ui](https://github.com/TayoAdepetu/Koras-ui)
