@@ -41,7 +41,7 @@ async function ensureDeps() {
 }
 
 /* ----------------------------
- ✅ Ensure lib/utils.ts exists
+ Ensure lib/utils.ts exists
 ---------------------------- */
 async function ensureUtils(baseDir) {
   const utilsPath = path.resolve(`${baseDir}/lib/utils.ts`);
@@ -61,34 +61,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /* ----------------------------
- Fetch ShadCN registry.json
----------------------------- */
-async function fetchShadcnPath(component, owner, repo, branch) {
-  const registryUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/registry.json`;
-
-  console.log(chalk.cyan("Fetching ShadCN registry..."));
-  console.log(chalk.dim(registryUrl));
-
-  const res = await fetch(registryUrl);
-  if (!res.ok) throw new Error("Cannot fetch registry.json");
-
-  const registry = await res.json();
-  if (!registry[component])
-    throw new Error(`Component "${component}" not found in ShadCN registry`);
-
-  return registry[component].path;
-}
-
-/* ----------------------------
  Case-insensitive path resolver
 ---------------------------- */
 function resolveCaseInsensitive(targetPath) {
   const normalized = path.normalize(targetPath);
   const parts = normalized.split(path.sep);
 
-  // Start path root (like C:\)
   let currentPath = parts[0] + path.sep;
-
   for (let i = 1; i < parts.length; i++) {
     const segment = parts[i];
     if (!fs.existsSync(currentPath)) return null;
@@ -99,62 +78,140 @@ function resolveCaseInsensitive(targetPath) {
     );
 
     if (!match) return null;
-
     currentPath = path.join(currentPath, match);
   }
-
   return currentPath;
 }
 
 /* ----------------------------
- ADD COMMAND (supports ShadCN)
+ Resolve alias (from package.json)
+---------------------------- */
+function resolveAlias(aliasName) {
+  try {
+    const pkgPath = path.resolve(process.cwd(), "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    const aliases = pkg.aliases || {};
+
+    if (!aliases[aliasName]) return null;
+
+    const aliasValue = aliases[aliasName].trim();
+
+    // Detect local paths (start with ., /, or Windows drive letter)
+    if (
+      aliasValue.startsWith(".") ||
+      aliasValue.startsWith("/") ||
+      /^[A-Za-z]:[\\/]/.test(aliasValue)
+    ) {
+      return { type: "local", value: aliasValue };
+    }
+
+    // Detect GitHub aliases (pattern: user/repo[/optional/path])
+    const githubPattern = /^[\w-]+\/[\w.-]+(\/.*)?$/;
+    if (githubPattern.test(aliasValue)) {
+      return { type: "github", value: aliasValue };
+    }
+
+    // Otherwise fallback to local
+    return { type: "local", value: aliasValue };
+  } catch {
+    return null;
+  }
+}
+
+/* ----------------------------
+ ADD COMMAND (supports ShadCN, Aliases, Local, GitHub)
 ---------------------------- */
 export async function add(component, options = {}) {
-  // Local override
+  const fromSource = options.from || options.local;
+
+  /* --- Handle alias first --- */
+  if (fromSource && !options.local && !options.owner) {
+    const aliasTarget = resolveAlias(fromSource);
+    if (aliasTarget) {
+      if (aliasTarget.type === "github") {
+        const parts = aliasTarget.value.split("/");
+        const [owner, repo, ...rest] = parts;
+        const repoPath = rest.join("/");
+        options.owner = owner;
+        options.repo = repo;
+        options.path = repoPath;
+        console.log(chalk.cyan(`Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`));
+      } else if (aliasTarget.type === "local") {
+        options.local = aliasTarget.value;
+        console.log(chalk.cyan(`Using alias "${fromSource}" → local path ${aliasTarget.value}`));
+      }
+    }
+  }
+
+  /* --- Handle ShadCN --- */
+  if (fromSource && fromSource.toLowerCase() === "shadcn") {
+    console.log(chalk.cyan(`Fetching "${component}" from ShadCN via npx...`));
+    try {
+      console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
+      execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
+      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
+    } catch (err) {
+      console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
+      console.error(chalk.red(err.message));
+    }
+    return;
+  }
+
+  /* --- Handle local import --- */
   if (options.local) {
     const inputPath = path.normalize(options.local);
-    const sourcePath = resolveCaseInsensitive(inputPath);
+    const baseComponentName = component.toLowerCase();
 
-    console.log(chalk.cyan(`Importing from local folder: ${inputPath}`));
+    console.log(chalk.cyan(`Importing from local source: ${inputPath}`));
 
-    if (!sourcePath) {
-      console.error(chalk.red("Local path not found (case-insensitive search failed):"));
-      console.error(chalk.red(`   ${inputPath}`));
+    let potentialFolder = path.join(inputPath, baseComponentName);
+    let resolvedFolder = resolveCaseInsensitive(potentialFolder);
+
+    const extensions = [".tsx", ".ts", ".jsx", ".js"];
+    let resolvedFile = null;
+
+    if (!resolvedFolder) {
+      for (const ext of extensions) {
+        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
+        const candidate = resolveCaseInsensitive(potentialFile);
+        if (candidate && fs.existsSync(candidate)) {
+          resolvedFile = candidate;
+          break;
+        }
+      }
+    }
+
+    if (!resolvedFolder && !resolvedFile) {
+      console.error(chalk.red("Component not found in the given path."));
+      console.error(chalk.red(`   Tried: ${potentialFolder} and file variants`));
       process.exit(1);
     }
 
     const baseDir = fs.existsSync("src") ? "src" : ".";
-    const destPath = path.resolve(`${baseDir}/components/ui/${component}`);
+    const destDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
-    console.log(chalk.green(`Resolved actual path: ${sourcePath}`));
+    await fs.ensureDir(destDir);
+    if (resolvedFolder) {
+      await fs.copy(resolvedFolder, destDir);
+    } else if (resolvedFile) {
+      const fileName = path.basename(resolvedFile);
+      await fs.copy(resolvedFile, path.join(destDir, fileName));
+    }
 
-    await fs.copy(sourcePath, destPath);
     await ensureUtils(baseDir);
     await ensureDeps();
-
-    console.log(chalk.green(`Imported "${component}" from local folder.`));
+    console.log(chalk.bold.green(`\nImported "${component}" from local alias into ${destDir}`));
     return;
   }
 
-  // GitHub-based fetching
+  /* --- GitHub fetching --- */
   const owner = options.owner || "TayoAdepetu";
   const repo = options.repo || "Koras-ui";
   const branch = options.branch || "master";
-
-  let componentPath = `components/ui/${component}`;
-
-  // If owner=shadcn, use registry.json
-  if (owner.toLowerCase() === "shadcn") {
-    try {
-      componentPath = await fetchShadcnPath(component, owner, repo, branch);
-    } catch (err) {
-      console.error(chalk.red("ShadCN Error:"), err.message);
-      process.exit(1);
-    }
-  }
+  const basePath = options.path || "components/ui";
+  const componentPath = `${basePath}/${component}`;
 
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${componentPath}?ref=${branch}`;
-
   console.log(chalk.cyan(`Fetching "${component}" from GitHub...`));
   console.log(chalk.dim(apiUrl));
 
@@ -162,12 +219,10 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, {
-      headers: { Accept: "application/vnd.github.v3+json" },
-    });
+    const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.v3+json" } });
     if (!res.ok) {
       console.error(chalk.red(`Component "${component}" not found in:`));
-      console.error(chalk.red(`   ${owner}/${repo}@${branch}`));
+      console.error(chalk.red(`   ${owner}/${repo}@${branch}/${basePath}`));
       process.exit(1);
     }
 
@@ -186,9 +241,7 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(
-        `\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`
-      )
+      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
     );
   } catch (err) {
     console.error(chalk.red("Error fetching component:"), err.message);
