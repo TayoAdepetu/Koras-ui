@@ -24,6 +24,7 @@ program
   .command("add <component>")
   .description("Add a UI component to your project")
   .option("--owner <owner>", "GitHub repo owner")
+  .option("--from <from>", "get component from shadcn")
   .option("--repo <repo>", "GitHub repo name")
   .option("--branch <branch>", "GitHub branch name")
   .option("--local <path>", "Local folder to import a component from")
