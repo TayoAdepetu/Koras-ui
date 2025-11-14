@@ -4,23 +4,6 @@ import path from "path";
 import chalk from "chalk";
 import { execSync } from "child_process";
 
-async function fetchWithRetry(url, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const r = await fetch(url, {
-        headers: {
-          "User-Agent": "koras-ui-cli",
-        },
-      });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return await r.text();
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise((res) => setTimeout(res, 500 * (i + 1))); // backoff
-    }
-  }
-}
-
 /* ----------------------------
  Ensure clsx + tailwind-merge
 ---------------------------- */
@@ -152,18 +135,10 @@ export async function add(component, options = {}) {
         options.owner = owner;
         options.repo = repo;
         options.path = repoPath;
-        console.log(
-          chalk.cyan(
-            `Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`
-          )
-        );
+        console.log(chalk.cyan(`Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`));
       } else if (aliasTarget.type === "local") {
         options.local = aliasTarget.value;
-        console.log(
-          chalk.cyan(
-            `Using alias "${fromSource}" → local path ${aliasTarget.value}`
-          )
-        );
+        console.log(chalk.cyan(`Using alias "${fromSource}" → local path ${aliasTarget.value}`));
       }
     }
   }
@@ -174,9 +149,7 @@ export async function add(component, options = {}) {
     try {
       console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
       execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
-      console.log(
-        chalk.green(`Successfully added "${component}" from ShadCN.`)
-      );
+      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
     } catch (err) {
       console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
       console.error(chalk.red(err.message));
@@ -199,10 +172,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder) {
       for (const ext of extensions) {
-        const potentialFile = path.join(
-          inputPath,
-          `${baseComponentName}${ext}`
-        );
+        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
         const candidate = resolveCaseInsensitive(potentialFile);
         if (candidate && fs.existsSync(candidate)) {
           resolvedFile = candidate;
@@ -213,9 +183,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder && !resolvedFile) {
       console.error(chalk.red("Component not found in the given path."));
-      console.error(
-        chalk.red(`   Tried: ${potentialFolder} and file variants`)
-      );
+      console.error(chalk.red(`   Tried: ${potentialFolder} and file variants`));
       process.exit(1);
     }
 
@@ -232,11 +200,7 @@ export async function add(component, options = {}) {
 
     await ensureUtils(baseDir);
     await ensureDeps();
-    console.log(
-      chalk.bold.green(
-        `\nImported "${component}" from local alias into ${destDir}`
-      )
-    );
+    console.log(chalk.bold.green(`\nImported "${component}" from local alias into ${destDir}`));
     return;
   }
 
@@ -255,9 +219,7 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, {
-      headers: { Accept: "application/vnd.github.v3+json" },
-    });
+    const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.v3+json" } });
     if (!res.ok) {
       console.error(chalk.red(`Component "${component}" not found in:`));
       console.error(chalk.red(`   ${owner}/${repo}@${branch}/${basePath}`));
@@ -269,7 +231,7 @@ export async function add(component, options = {}) {
 
     for (const file of files) {
       if (file.type === "file") {
-        const content = await fetchWithRetry(file.download_url);
+        const content = await (await fetch(file.download_url)).text();
         await fs.outputFile(path.join(destinationDir, file.name), content);
         console.log(chalk.green(`Added ${file.name}`));
       }
@@ -279,9 +241,7 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(
-        `\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`
-      )
+      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
     );
   } catch (err) {
     console.error(chalk.red("Error fetching component:"), err.message);
