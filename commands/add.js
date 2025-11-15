@@ -291,7 +291,7 @@ export async function add(component, options = {}) {
   /* --- Handle local import --- */
   if (options.local) {
     const inputPath = path.normalize(options.local);
-    const baseComponentName = component.toLowerCase();
+    const baseComponentName = component;
 
     console.log(chalk.cyan(`Importing from local source: ${inputPath}`));
 
