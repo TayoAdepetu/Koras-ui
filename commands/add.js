@@ -167,31 +167,29 @@ export async function add(component, options = {}) {
   // }
 
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
-    console.log(chalk.cyan(`Fetching "${component}" from ShadCN via npx...`));
+    console.log(chalk.cyan(`Adding "${component}" from ShadCN via npx...`));
+
+    // Ensure project is initialized for ShadCN
+    const componentsJsonPath = path.resolve(process.cwd(), "components.json");
+    const srcExists = fs.existsSync(path.resolve(process.cwd(), "src"));
+    const tailwindExists = fs.existsSync(path.resolve(process.cwd(), "tailwind.config.js"));
+
+    if (!srcExists || !tailwindExists) {
+      console.error(chalk.red("Project is not initialized for ShadCN (Tailwind + React required)."));
+      console.log(chalk.yellow("Run `npx koras-ui init` first to setup Tailwind & project structure."));
+      return;
+    }
 
     try {
-      // Ensure a minimal components.json exists
-      const componentsJsonPath = path.resolve(process.cwd(), "components.json");
-      if (!fs.existsSync(componentsJsonPath)) {
-        await fs.outputJson(componentsJsonPath, { components: [] }, { spaces: 2 });
-        console.log(chalk.green("Created components.json for ShadCN CLI"));
-      }
-
-      // Run the ShadCN CLI to add the component
+      // Run ShadCN CLI
       console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
       execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
-
       console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
     } catch (err) {
       console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
       console.error(chalk.red(err.message));
-      console.error(
-        chalk.yellow(
-          `Tip: Make sure your project is initialized for ShadCN (Tailwind + React). See https://ui.shadcn.com/docs/installation/manual`
-        )
-      );
+      console.error(chalk.yellow("Ensure your project is a React + Tailwind project and try again."));
     }
-
     return;
   }
 
