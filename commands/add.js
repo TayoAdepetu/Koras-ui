@@ -144,40 +144,19 @@ export async function add(component, options = {}) {
   }
 
   /* --- Handle ShadCN --- */
-
-  // If owner=shadcn, use registry.json 
-  // if (owner.toLowerCase() === "shadcn") { 
-  // try { 
-  // componentPath = await fetchShadcnPath(component, owner, repo, branch); 
-  // } 
-  // catch (err) { 
-  //   console.error(chalk.red("ShadCN Error:"), err.message); process.exit(1);
-  //  } 
-  // }
-
-  // async function fetchShadcnPath(component, owner, repo, branch) { 
-  // const registryUrl = https://raw.githubusercontent.com/${owner}/${repo}/${branch}/registry.json; 
-  // console.log(chalk.cyan("Fetching ShadCN registry...")); 
-  // console.log(chalk.dim(registryUrl)); 
-  // const res = await fetch(registryUrl); 
-  // if (!res.ok) throw new Error("Cannot fetch registry.json"); 
-  // const registry = await res.json(); 
-  // if (!registry[component]) throw new Error(Component "${component}" not found in ShadCN registry); 
-  // return registry[component].path; 
-  // }
-
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
     console.log(chalk.cyan(`Adding "${component}" from ShadCN via npx...`));
 
     // Ensure project is initialized for ShadCN
-    const componentsJsonPath = path.resolve(process.cwd(), "components.json");
-    const srcExists = fs.existsSync(path.resolve(process.cwd(), "src"));
-    const tailwindExists = fs.existsSync(path.resolve(process.cwd(), "tailwind.config.js"));
+    const missingSetup =
+      !fs.existsSync("tailwind.config.js") ||
+      !fs.existsSync("postcss.config.js") ||
+      !fs.existsSync("src/styles/globals.css");
 
-    if (!srcExists || !tailwindExists) {
-      console.error(chalk.red("Project is not initialized for ShadCN (Tailwind + React required)."));
-      console.log(chalk.yellow("Run `npx koras-ui init` first to setup Tailwind & project structure."));
-      return;
+    if (missingSetup) {
+      console.log(chalk.yellow("Project not initialized. Running `koras-ui init`..."));
+      const { init } = await import("./init.js");
+      await init();
     }
 
     try {
