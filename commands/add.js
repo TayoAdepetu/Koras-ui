@@ -182,7 +182,7 @@ export async function add(component, options = {}) {
       execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
 
       console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
-    } catch (err: any) {
+    } catch (err) {
       console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
       console.error(chalk.red(err.message));
       console.error(
