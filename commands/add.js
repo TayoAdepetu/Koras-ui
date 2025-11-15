@@ -65,8 +65,8 @@ async function ensureDeps() {
   const cmd = useYarn
     ? `yarn add ${missing.join(" ")}`
     : usePnpm
-    ? `pnpm add ${missing.join(" ")}`
-    : `npm install ${missing.join(" ")}`;
+      ? `pnpm add ${missing.join(" ")}`
+      : `npm install ${missing.join(" ")}`;
 
   try {
     execSync(cmd, { stdio: "inherit" });
@@ -254,8 +254,8 @@ export async function add(component, options = {}) {
         const cmd = fs.existsSync("yarn.lock")
           ? `yarn add ${entry.dependencies.join(" ")}`
           : fs.existsSync("pnpm-lock.yaml")
-          ? `pnpm add ${entry.dependencies.join(" ")}`
-          : `npm install ${entry.dependencies.join(" ")}`;
+            ? `pnpm add ${entry.dependencies.join(" ")}`
+            : `npm install ${entry.dependencies.join(" ")}`;
 
         execSync(cmd, { stdio: "inherit" });
       }
@@ -270,8 +270,8 @@ export async function add(component, options = {}) {
         const cmd = fs.existsSync("yarn.lock")
           ? `yarn add -D ${entry.devDependencies.join(" ")}`
           : fs.existsSync("pnpm-lock.yaml")
-          ? `pnpm add -D ${entry.devDependencies.join(" ")}`
-          : `npm install -D ${entry.devDependencies.join(" ")}`;
+            ? `pnpm add -D ${entry.devDependencies.join(" ")}`
+            : `npm install -D ${entry.devDependencies.join(" ")}`;
 
         execSync(cmd, { stdio: "inherit" });
       }
@@ -375,8 +375,20 @@ export async function add(component, options = {}) {
       if (file.type === "file") {
         const content = await (await fetch(file.download_url)).text();
         const filePath = path.join(destinationDir, file.name);
-        await fs.outputFile(filePath, content);
-        await copyWithPrompt(filePath, filePath);
+
+        const exists = await fs.pathExists(filePath);
+        let writeFile = true;
+
+        if (exists) {
+          writeFile = await askYesNo(`File "${filePath}" already exists. Replace it?`);
+          if (!writeFile) {
+            console.log(chalk.yellow(`Skipped "${filePath}".`));
+          }
+        }
+        if (writeFile) {
+          await fs.outputFile(filePath, content);
+          console.log(chalk.green(`Added ${filePath}`));
+        }
       }
     }
 
