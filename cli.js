@@ -36,6 +36,7 @@ program
 program
   .command("list")
   .description("List available components")
+  .option("--from <source>", "get component from shadcn")
   .option("--owner <owner>", "GitHub repo owner")
   .option("--repo <repo>", "GitHub repo name")
   .option("--branch <branch>", "GitHub branch name")
