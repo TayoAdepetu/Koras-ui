@@ -149,7 +149,7 @@ export async function add(component, options = {}) {
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
     console.log(chalk.cyan(`Fetching "${component}" from ShadCN registry...`));
 
-    const registryUrl = "https://ui.shadcn.com/r/components.json";
+    const registryUrl = `https://registry.shadcn-ui.com/r/components/${component}`;
 
     try {
       const registryRes = await fetch(registryUrl);
