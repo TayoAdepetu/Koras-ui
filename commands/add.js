@@ -143,31 +143,81 @@ export async function add(component, options = {}) {
     }
   }
 
-  /* --- Handle ShadCN --- */
+  /* ----------------------------
+  SHADCN via registry.json (no CLI)
+---------------------------- */
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
-    console.log(chalk.cyan(`Adding "${component}" from ShadCN via npx...`));
+    console.log(chalk.cyan(`Fetching "${component}" from ShadCN registry...`));
 
-    // Ensure project is initialized for ShadCN
-    const missingSetup =
-      !fs.existsSync("tailwind.config.js") ||
-      !fs.existsSync("postcss.config.js") ||
-      !fs.existsSync("src/styles/globals.css");
-
-    if (missingSetup) {
-      console.log(chalk.yellow("Project not initialized. Running `koras-ui init`..."));
-      const { init } = await import("./init.js");
-      await init();
-    }
+    const registryUrl = "https://ui.shadcn.com/r/components.json";
 
     try {
-      // Run ShadCN CLI
-      console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
-      execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
-      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
+      const registryRes = await fetch(registryUrl);
+      if (!registryRes.ok) {
+        throw new Error("Failed to fetch ShadCN registry");
+      }
+
+      const registry = await registryRes.json();
+
+      const entry = registry.find(
+        (c) => c.name.toLowerCase() === component.toLowerCase()
+      );
+
+      if (!entry) {
+        console.error(chalk.red(`Component "${component}" not found in ShadCN registry.`));
+        return;
+      }
+
+      const baseDir = fs.existsSync("src") ? "src" : ".";
+      const destDir = path.resolve(`${baseDir}/components/ui/${component}`);
+
+      await fs.ensureDir(destDir);
+
+      // Fetch all files in the component definition
+      for (const file of entry.files) {
+        const fileRes = await fetch(file.url);
+        if (!fileRes.ok) {
+          console.error(chalk.red(`Failed fetching file: ${file.path}`));
+          continue;
+        }
+
+        const content = await fileRes.text();
+        const filePath = path.join(destDir, path.basename(file.path));
+        await fs.outputFile(filePath, content);
+        console.log(chalk.green(`Added ${filePath}`));
+      }
+
+      // Ensure utils.ts exists
+      await ensureUtils(baseDir);
+
+      // Install dependencies declared in the component
+      if (entry.dependencies?.length) {
+        console.log(chalk.yellow(`Installing dependencies: ${entry.dependencies.join(", ")}`));
+        const cmd = fs.existsSync("yarn.lock")
+          ? `yarn add ${entry.dependencies.join(" ")}`
+          : fs.existsSync("pnpm-lock.yaml")
+            ? `pnpm add ${entry.dependencies.join(" ")}`
+            : `npm install ${entry.dependencies.join(" ")}`;
+
+        execSync(cmd, { stdio: "inherit" });
+      }
+
+      // Install devDependencies declared in the component
+      if (entry.devDependencies?.length) {
+        console.log(chalk.yellow(`Installing devDependencies: ${entry.devDependencies.join(", ")}`));
+        const cmd = fs.existsSync("yarn.lock")
+          ? `yarn add -D ${entry.devDependencies.join(" ")}`
+          : fs.existsSync("pnpm-lock.yaml")
+            ? `pnpm add -D ${entry.devDependencies.join(" ")}`
+            : `npm install -D ${entry.devDependencies.join(" ")}`;
+
+        execSync(cmd, { stdio: "inherit" });
+      }
+
+      console.log(chalk.green(`\nSuccessfully installed "${component}" from ShadCN registry.`));
     } catch (err) {
-      console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
+      console.error(chalk.red("Failed to fetch from ShadCN registry"));
       console.error(chalk.red(err.message));
-      console.error(chalk.yellow("Ensure your project is a React + Tailwind project and try again."));
     }
     return;
   }
