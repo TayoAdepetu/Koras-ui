@@ -149,7 +149,7 @@ export async function add(component, options = {}) {
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
     console.log(chalk.cyan(`Fetching "${component}" from ShadCN registry...`));
 
-    const registryUrl = `https://registry.shadcn-ui.com/r/components/${component}`;
+    const registryUrl = "https://ui.shadcn.com/r/components.json";
 
     try {
       const registryRes = await fetch(registryUrl);
@@ -229,7 +229,7 @@ export async function add(component, options = {}) {
 
     console.log(chalk.cyan(`Importing from local source: ${inputPath}`));
 
-    let potentialFolder = path.join(inputPath, baseComponentName);
+    let potentialFolder = path.join(inputPath, component);
     let resolvedFolder = resolveCaseInsensitive(potentialFolder);
 
     const extensions = [".tsx", ".ts", ".jsx", ".js"];
@@ -237,7 +237,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder) {
       for (const ext of extensions) {
-        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
+        const potentialFile = path.join(inputPath, `${component}${ext}`);
         const candidate = resolveCaseInsensitive(potentialFile);
         if (candidate && fs.existsSync(candidate)) {
           resolvedFile = candidate;
