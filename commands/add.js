@@ -28,8 +28,8 @@ async function ensureDeps() {
   const cmd = useYarn
     ? `yarn add ${missing.join(" ")}`
     : usePnpm
-    ? `pnpm add ${missing.join(" ")}`
-    : `npm install ${missing.join(" ")}`;
+      ? `pnpm add ${missing.join(" ")}`
+      : `npm install ${missing.join(" ")}`;
 
   try {
     execSync(cmd, { stdio: "inherit" });
@@ -135,125 +135,61 @@ export async function add(component, options = {}) {
         options.owner = owner;
         options.repo = repo;
         options.path = repoPath;
-        console.log(
-          chalk.cyan(
-            `Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`
-          )
-        );
+        console.log(chalk.cyan(`Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`));
       } else if (aliasTarget.type === "local") {
         options.local = aliasTarget.value;
-        console.log(
-          chalk.cyan(
-            `Using alias "${fromSource}" → local path ${aliasTarget.value}`
-          )
-        );
+        console.log(chalk.cyan(`Using alias "${fromSource}" → local path ${aliasTarget.value}`));
       }
     }
   }
 
   /* --- Handle ShadCN --- */
 
-  // If owner=shadcn, use registry.json
-  // if (owner.toLowerCase() === "shadcn") {
-  // try {
-  // componentPath = await fetchShadcnPath(component, owner, repo, branch);
-  // }
-  // catch (err) {
+  // If owner=shadcn, use registry.json 
+  // if (owner.toLowerCase() === "shadcn") { 
+  // try { 
+  // componentPath = await fetchShadcnPath(component, owner, repo, branch); 
+  // } 
+  // catch (err) { 
   //   console.error(chalk.red("ShadCN Error:"), err.message); process.exit(1);
-  //  }
+  //  } 
   // }
 
-  // async function fetchShadcnPath(component, owner, repo, branch) {
-  // const registryUrl = https://raw.githubusercontent.com/${owner}/${repo}/${branch}/registry.json;
-  // console.log(chalk.cyan("Fetching ShadCN registry..."));
-  // console.log(chalk.dim(registryUrl));
-  // const res = await fetch(registryUrl);
-  // if (!res.ok) throw new Error("Cannot fetch registry.json");
-  // const registry = await res.json();
-  // if (!registry[component]) throw new Error(Component "${component}" not found in ShadCN registry);
-  // return registry[component].path;
+  // async function fetchShadcnPath(component, owner, repo, branch) { 
+  // const registryUrl = https://raw.githubusercontent.com/${owner}/${repo}/${branch}/registry.json; 
+  // console.log(chalk.cyan("Fetching ShadCN registry...")); 
+  // console.log(chalk.dim(registryUrl)); 
+  // const res = await fetch(registryUrl); 
+  // if (!res.ok) throw new Error("Cannot fetch registry.json"); 
+  // const registry = await res.json(); 
+  // if (!registry[component]) throw new Error(Component "${component}" not found in ShadCN registry); 
+  // return registry[component].path; 
   // }
 
-  // if (fromSource && fromSource.toLowerCase() === "shadcn") {
-  //   console.log(chalk.cyan(`Fetching "${component}" from ShadCN via npx...`));
-  //   try {
-  //     console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
-  //     execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
-  //     console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
-  //   } catch (err) {
-  //     console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
-  //     console.error(chalk.red(err.message));
-  //   }
-  //   return;
-  // }
-
-  /* --- Handle ShadCN --- */
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
-    console.log(chalk.cyan(`Fetching "${component}" from ShadCN registry...`));
+    console.log(chalk.cyan(`Fetching "${component}" from ShadCN via npx...`));
 
     try {
-      // 1. Fetch registry.json
-      const registryUrl = "https://ui.shadcn.com/registry.json";
-      const registryRes = await fetch(registryUrl);
-      if (!registryRes.ok) throw new Error(`Failed to fetch registry.json`);
-      const registry = await registryRes.json();
-
-      const compMeta = registry.components.find(
-        (c) => c.name.toLowerCase() === component.toLowerCase()
-      );
-      if (!compMeta)
-        throw new Error(
-          `Component "${component}" not found in ShadCN registry`
-        );
-
-      // 2. Install dependencies
-      const deps = compMeta.dependencies || [];
-      const missingDeps = deps.filter((dep) => {
-        try {
-          require.resolve(dep, { paths: [process.cwd()] });
-          return false;
-        } catch {
-          return true;
-        }
-      });
-
-      if (missingDeps.length) {
-        console.log(
-          chalk.yellow(`Installing dependencies: ${missingDeps.join(", ")}`)
-        );
-        const useYarn = fs.existsSync("yarn.lock");
-        const usePnpm = fs.existsSync("pnpm-lock.yaml");
-        const cmd = useYarn
-          ? `yarn add ${missingDeps.join(" ")}`
-          : usePnpm
-          ? `pnpm add ${missingDeps.join(" ")}`
-          : `npm install ${missingDeps.join(" ")}`;
-        execSync(cmd, { stdio: "inherit" });
+      // Ensure a minimal components.json exists
+      const componentsJsonPath = path.resolve(process.cwd(), "components.json");
+      if (!fs.existsSync(componentsJsonPath)) {
+        await fs.outputJson(componentsJsonPath, { components: [] }, { spaces: 2 });
+        console.log(chalk.green("Created components.json for ShadCN CLI"));
       }
 
-      // 3. Copy component files
-      const baseDir = fs.existsSync("src") ? "src" : ".";
-      const destDir = path.resolve(`${baseDir}/components/ui/${component}`);
-      await fs.ensureDir(destDir);
+      // Run the ShadCN CLI to add the component
+      console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
+      execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
 
-      for (const file of compMeta.files) {
-        const content = await fetch(file.url).then((r) => r.text());
-        const filePath = path.join(destDir, file.path);
-        await fs.outputFile(filePath, content);
-        console.log(chalk.green(`Added ${file.path}`));
-      }
-
-      // 4. Ensure utils.ts
-      await ensureUtils(baseDir);
-
-      console.log(
-        chalk.bold.green(
-          `\nInstalled "${component}" with dependencies into ${destDir}`
-        )
-      );
-    } catch (err) {
+      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
+    } catch (err: any) {
       console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
       console.error(chalk.red(err.message));
+      console.error(
+        chalk.yellow(
+          `Tip: Make sure your project is initialized for ShadCN (Tailwind + React). See https://ui.shadcn.com/docs/installation/manual`
+        )
+      );
     }
 
     return;
@@ -274,10 +210,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder) {
       for (const ext of extensions) {
-        const potentialFile = path.join(
-          inputPath,
-          `${baseComponentName}${ext}`
-        );
+        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
         const candidate = resolveCaseInsensitive(potentialFile);
         if (candidate && fs.existsSync(candidate)) {
           resolvedFile = candidate;
@@ -288,9 +221,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder && !resolvedFile) {
       console.error(chalk.red("Component not found in the given path."));
-      console.error(
-        chalk.red(`   Tried: ${potentialFolder} and file variants`)
-      );
+      console.error(chalk.red(`   Tried: ${potentialFolder} and file variants`));
       process.exit(1);
     }
 
@@ -307,11 +238,7 @@ export async function add(component, options = {}) {
 
     await ensureUtils(baseDir);
     await ensureDeps();
-    console.log(
-      chalk.bold.green(
-        `\nImported "${component}" from local alias into ${destDir}`
-      )
-    );
+    console.log(chalk.bold.green(`\nImported "${component}" from local alias into ${destDir}`));
     return;
   }
 
@@ -330,9 +257,7 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, {
-      headers: { Accept: "application/vnd.github.v3+json" },
-    });
+    const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.v3+json" } });
     if (!res.ok) {
       console.error(chalk.red(`Component "${component}" not found in:`));
       console.error(chalk.red(`   ${owner}/${repo}@${branch}/${basePath}`));
@@ -354,9 +279,7 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(
-        `\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`
-      )
+      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
     );
   } catch (err) {
     console.error(chalk.red("Error fetching component:"), err.message);
