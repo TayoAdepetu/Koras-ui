@@ -195,97 +195,43 @@ export async function add(component, options = {}) {
     }
   }
 
-  /* ----------------------------
-  SHADCN via registry.json (no CLI)
----------------------------- */
-  if (fromSource && fromSource.toLowerCase() === "shadcn") {
-    console.log(chalk.cyan(`Fetching "${component}" from ShadCN registry...`));
 
-    const registryUrl = "https://ui.shadcn.com/r/components.json";
+  /* ----------------------------
+  Handle ShadCN components
+ ---------------------------- */
+  if (fromSource && fromSource.toLowerCase() === "shadcn") {
+    console.log(chalk.cyan(`Adding "${component}" from ShadCN via npx...`));
+
+    // Ensure project is properly initialized before adding components
+    const missingSetup =
+      !fs.existsSync("tailwind.config.js") ||
+      !fs.existsSync("postcss.config.js") ||
+      !fs.existsSync("src/styles/globals.css");
+
+    if (missingSetup) {
+      console.log(chalk.yellow("Project not initialized. Running koras-ui init..."));
+      const { init } = await import("./init.js");
+      await init();
+    }
 
     try {
-      const registryRes = await fetch(registryUrl);
-      if (!registryRes.ok) {
-        throw new Error("Failed to fetch ShadCN registry");
-      }
+      console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
 
-      const registry = await registryRes.json();
+      // Run ShadCN CLI (sync, inherits terminal output)
+      execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
 
-      const entry = registry.find(
-        (c) => c.name.toLowerCase() === component.toLowerCase()
-      );
-
-      if (!entry) {
-        console.error(
-          chalk.red(`Component "${component}" not found in ShadCN registry.`)
-        );
-        return;
-      }
-
-      const baseDir = fs.existsSync("src") ? "src" : ".";
-      const destDir = path.resolve(`${baseDir}/components/ui/${component}`);
-
-      await fs.ensureDir(destDir);
-
-      // Fetch all files in the component definition
-      for (const file of entry.files) {
-        const fileRes = await fetch(file.url);
-        if (!fileRes.ok) {
-          console.error(chalk.red(`Failed fetching file: ${file.path}`));
-          continue;
-        }
-
-        const content = await fileRes.text();
-        const filePath = path.join(destDir, path.basename(file.path));
-        await copyWithPrompt(filePath, filePath);
-        console.log(chalk.green(`Added ${filePath}`));
-      }
-
-      // Ensure utils.ts exists
-      await ensureUtils(baseDir);
-
-      // Install dependencies declared in the component
-      if (entry.dependencies?.length) {
-        console.log(
-          chalk.yellow(
-            `Installing dependencies: ${entry.dependencies.join(", ")}`
-          )
-        );
-        const cmd = fs.existsSync("yarn.lock")
-          ? `yarn add ${entry.dependencies.join(" ")}`
-          : fs.existsSync("pnpm-lock.yaml")
-            ? `pnpm add ${entry.dependencies.join(" ")}`
-            : `npm install ${entry.dependencies.join(" ")}`;
-
-        execSync(cmd, { stdio: "inherit" });
-      }
-
-      // Install devDependencies declared in the component
-      if (entry.devDependencies?.length) {
-        console.log(
-          chalk.yellow(
-            `Installing devDependencies: ${entry.devDependencies.join(", ")}`
-          )
-        );
-        const cmd = fs.existsSync("yarn.lock")
-          ? `yarn add -D ${entry.devDependencies.join(" ")}`
-          : fs.existsSync("pnpm-lock.yaml")
-            ? `pnpm add -D ${entry.devDependencies.join(" ")}`
-            : `npm install -D ${entry.devDependencies.join(" ")}`;
-
-        execSync(cmd, { stdio: "inherit" });
-      }
-
-      console.log(
-        chalk.green(
-          `\nSuccessfully installed "${component}" from ShadCN registry.`
+      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
+    } catch (err) {
+      console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
+      console.error(chalk.red(err.message));
+      console.error(
+        chalk.yellow(
+          "Ensure your project is a React + Tailwind setup before using the ShadCN CLI."
         )
       );
-    } catch (err) {
-      console.error(chalk.red("Failed to fetch from ShadCN registry"));
-      console.error(chalk.red(err.message));
     }
-    return;
+
+    return; // prevent script from running local/github logic afterwards
   }
 
   /* --- Handle local import --- */
