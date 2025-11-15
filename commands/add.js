@@ -225,11 +225,11 @@ export async function add(component, options = {}) {
   /* --- Handle local import --- */
   if (options.local) {
     const inputPath = path.normalize(options.local);
-    const baseComponentName = component.toLowerCase();
+    const baseComponentName = component;
 
     console.log(chalk.cyan(`Importing from local source: ${inputPath}`));
 
-    let potentialFolder = path.join(inputPath, component);
+    let potentialFolder = path.join(inputPath, baseComponentName);
     let resolvedFolder = resolveCaseInsensitive(potentialFolder);
 
     const extensions = [".tsx", ".ts", ".jsx", ".js"];
@@ -237,7 +237,7 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder) {
       for (const ext of extensions) {
-        const potentialFile = path.join(inputPath, `${component}${ext}`);
+        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
         const candidate = resolveCaseInsensitive(potentialFile);
         if (candidate && fs.existsSync(candidate)) {
           resolvedFile = candidate;
