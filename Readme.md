@@ -1,6 +1,6 @@
 # Koras UI CLI
 
-A flexible, lightweight CLI for scaffolding and reusing React/Next.js UI components — from Koras UI, ShadCN, any GitHub repo, or your local filesystem.
+A flexible, lightweight CLI for scaffolding and reusing React/Next.js UI components — from Koras UI repo, ShadCN, any GitHub repo, or your local filesystem.
 
 ```bash
 npx koras-ui add button
@@ -12,7 +12,7 @@ Instantly installs a component into:
 src/components/ui/<component>/
 ```
 
-or
+or (depending on your folder structure)
 
 ```
 components/ui/<component>/
@@ -20,8 +20,8 @@ components/ui/<component>/
 
 Automatically:
 
-- Creates `lib/utils.ts`
-- Installs `clsx` + `tailwind-merge`
+- Creates `lib/utils.ts` if your project does not have it already
+- Installs `clsx` + `tailwind-merge` if your project does not have it already
 - Detects project structure
 - Supports aliases
 - Fetches from GitHub or local paths
@@ -31,16 +31,21 @@ Automatically:
 
 ## Installation
 
-### Option 1 — Use via NPX (Recommended)
+### Option 1 — Retrieve components directly from NPX without installing in your project (Recommended)
 
 ```bash
 npx koras-ui add button
 ```
 
-### Option 2 — Install Globally
+### Option 2 — Install globally on your device
 
 ```bash
 npm install -g koras-ui
+```
+
+Then you can use what you have on your device:
+
+```bash
 koras-ui add button
 ```
 
@@ -152,9 +157,9 @@ Aliases let you define reusable shortcuts inside your `package.json`.
 ```json
 {
   "aliases": {
-    "britmo": "../MyPortfolio/src/components",
-    "timo": "./my/custom/ui",
-    "remoto": "codingnninja/MyUIRepo/components"
+    "britmo-relative": "../MyPortfolio/components/ui",
+    "britmo-absolute": "C:/Users/User/DNDPWA/src/components/Common/Buttons",
+    "remoto": "TayoAdepetu/MyOldProject/components/ui"
   }
 }
 ```
@@ -163,16 +168,16 @@ Aliases let you define reusable shortcuts inside your `package.json`.
 
 | Alias Type | Example | Description |
 |------------|---------|-------------|
-| Local folder | `"britmo": "../MyPortfolio/src/components"` | Import from your computer |
-| Relative path | `"timo": "./local/ui"` | Import folders inside your project |
-| GitHub repo | `"remoto": "codingnninja/MyUIRepo/components"` | Import from GitHub |
+| Local folder (using relative path) | `"britmo-relative": "../MyPortfolio/src/components/ui"` | Import from your computer using relative path |
+| Local folder (using absolute path) | `"britmo-absolute": "C:/Users/User/DNDPWA/src/components/Common/Buttons"` | Import from your computer using absolute path |
+| GitHub repo (username/ProjectRepo/PathToFolder) | `"remoto": "codingnninja/MyUIRepo/components"` | Import from any public GitHub repo |
 
 ### Step 2 — Use the alias when adding a component
 
 **Local alias:**
 
 ```bash
-npx koras-ui add Button --from britmo
+npx koras-ui add Button --from britmo-relative
 ```
 
 **GitHub alias:**
@@ -181,25 +186,21 @@ npx koras-ui add Button --from britmo
 npx koras-ui add Card --from remoto
 ```
 
-**Relative project alias:**
-
-```bash
-npx koras-ui add Modal --from timo
-```
-
 ### Alias Resolution Order
 
 When you run:
 
 ```bash
-npx koras-ui add Button --from britmo
+npx koras-ui add Button --from britmo-relative
 ```
 
-Koras UI checks in this order:
+Koras UI CLI checks in this order:
 
 1. Local path exists? → use it
-2. GitHub repo format (`username/repo/...`)? → fetch from GitHub
-3. Fallback to local fetch
+2. GitHub repo format (`username/repo/{path_to_component_folder}`)? → fetch from GitHub
+3. Fallback to Koras-UI GitHub components
+
+{path_to_component_folder} means the path to the folder containing the component (file or folder) you want to retrieve from GitHub. For example, assuming I want to retrieve this button component (https://github.com/TayoAdepetu/Koras-ui/tree/experimental/components/ui/button), then my {path_to_component_folder} will be 'components/ui'.
 
 This makes aliases:
 
@@ -220,7 +221,7 @@ GitHub aliases also default to the `master` branch unless you provide `--branch`
 | `--repo` | Repository name | `--repo ui-kit` |
 | `--branch` | Branch name (defaults to `master`) | `--branch dev` |
 | `--local` | Import from local filesystem | `--local ../components/button` |
-| `--from` | Use alias or special source (`shadcn`) | `--from britmo` |
+| `--from` | Use alias or special source (`shadcn`) | `--from britmo-absolute` |
 
 ---
 
