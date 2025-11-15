@@ -1,6 +1,6 @@
 {
   "name": "koras-ui",
-  "version": "1.1.7-experimental.14",
+  "version": "1.1.7-experimental.15",
   "description": "Koras UI Component CLI - add Tailwind-based UI components easily",
   "bin": {
     "koras-ui": "./cli.js"

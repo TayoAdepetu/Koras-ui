@@ -3,6 +3,43 @@ import fs from "fs-extra";
 import path from "path";
 import chalk from "chalk";
 import { execSync } from "child_process";
+import readline from "readline";
+
+function askYesNo(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(question + " (y/N): ", (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase() === "y");
+    });
+  });
+}
+
+async function copyWithPrompt(src, dest) {
+  const exists = await fs.pathExists(dest);
+
+  if (exists) {
+    const isFolder = (await fs.stat(dest)).isDirectory();
+    const question = isFolder
+      ? `Folder "${dest}" already exists. Replace it?`
+      : `File "${dest}" already exists. Replace it?`;
+
+    const overwrite = await askYesNo(question);
+    if (!overwrite) {
+      console.log(chalk.yellow(`Skipped copying "${dest}".`));
+      return false;
+    } else {
+      await fs.remove(dest);
+    }
+  }
+
+  await fs.copy(src, dest);
+  return true;
+}
 
 /* ----------------------------
  Ensure clsx + tailwind-merge
@@ -28,8 +65,8 @@ async function ensureDeps() {
   const cmd = useYarn
     ? `yarn add ${missing.join(" ")}`
     : usePnpm
-      ? `pnpm add ${missing.join(" ")}`
-      : `npm install ${missing.join(" ")}`;
+    ? `pnpm add ${missing.join(" ")}`
+    : `npm install ${missing.join(" ")}`;
 
   try {
     execSync(cmd, { stdio: "inherit" });
@@ -135,10 +172,25 @@ export async function add(component, options = {}) {
         options.owner = owner;
         options.repo = repo;
         options.path = repoPath;
-        console.log(chalk.cyan(`Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`));
+        console.log(
+          chalk.cyan(
+            `Using alias "${fromSource}" → GitHub repo ${owner}/${repo}/${repoPath}`
+          )
+        );
       } else if (aliasTarget.type === "local") {
-        options.local = aliasTarget.value;
-        console.log(chalk.cyan(`Using alias "${fromSource}" → local path ${aliasTarget.value}`));
+        const rawPath = aliasTarget.value;
+
+        // Resolve relative paths relative to the project root
+        const resolvedPath = path.isAbsolute(rawPath)
+          ? rawPath
+          : path.resolve(process.cwd(), rawPath);
+
+        options.local = resolvedPath;
+        console.log(
+          chalk.cyan(
+            `Using alias "${fromSource}" → local path ${aliasTarget.value}`
+          )
+        );
       }
     }
   }
@@ -164,7 +216,9 @@ export async function add(component, options = {}) {
       );
 
       if (!entry) {
-        console.error(chalk.red(`Component "${component}" not found in ShadCN registry.`));
+        console.error(
+          chalk.red(`Component "${component}" not found in ShadCN registry.`)
+        );
         return;
       }
 
@@ -183,7 +237,7 @@ export async function add(component, options = {}) {
 
         const content = await fileRes.text();
         const filePath = path.join(destDir, path.basename(file.path));
-        await fs.outputFile(filePath, content);
+        await copyWithPrompt(filePath, filePath);
         console.log(chalk.green(`Added ${filePath}`));
       }
 
@@ -192,29 +246,41 @@ export async function add(component, options = {}) {
 
       // Install dependencies declared in the component
       if (entry.dependencies?.length) {
-        console.log(chalk.yellow(`Installing dependencies: ${entry.dependencies.join(", ")}`));
+        console.log(
+          chalk.yellow(
+            `Installing dependencies: ${entry.dependencies.join(", ")}`
+          )
+        );
         const cmd = fs.existsSync("yarn.lock")
           ? `yarn add ${entry.dependencies.join(" ")}`
           : fs.existsSync("pnpm-lock.yaml")
-            ? `pnpm add ${entry.dependencies.join(" ")}`
-            : `npm install ${entry.dependencies.join(" ")}`;
+          ? `pnpm add ${entry.dependencies.join(" ")}`
+          : `npm install ${entry.dependencies.join(" ")}`;
 
         execSync(cmd, { stdio: "inherit" });
       }
 
       // Install devDependencies declared in the component
       if (entry.devDependencies?.length) {
-        console.log(chalk.yellow(`Installing devDependencies: ${entry.devDependencies.join(", ")}`));
+        console.log(
+          chalk.yellow(
+            `Installing devDependencies: ${entry.devDependencies.join(", ")}`
+          )
+        );
         const cmd = fs.existsSync("yarn.lock")
           ? `yarn add -D ${entry.devDependencies.join(" ")}`
           : fs.existsSync("pnpm-lock.yaml")
-            ? `pnpm add -D ${entry.devDependencies.join(" ")}`
-            : `npm install -D ${entry.devDependencies.join(" ")}`;
+          ? `pnpm add -D ${entry.devDependencies.join(" ")}`
+          : `npm install -D ${entry.devDependencies.join(" ")}`;
 
         execSync(cmd, { stdio: "inherit" });
       }
 
-      console.log(chalk.green(`\nSuccessfully installed "${component}" from ShadCN registry.`));
+      console.log(
+        chalk.green(
+          `\nSuccessfully installed "${component}" from ShadCN registry.`
+        )
+      );
     } catch (err) {
       console.error(chalk.red("Failed to fetch from ShadCN registry"));
       console.error(chalk.red(err.message));
@@ -225,7 +291,7 @@ export async function add(component, options = {}) {
   /* --- Handle local import --- */
   if (options.local) {
     const inputPath = path.normalize(options.local);
-    const baseComponentName = component;
+    const baseComponentName = component.toLowerCase();
 
     console.log(chalk.cyan(`Importing from local source: ${inputPath}`));
 
@@ -237,7 +303,10 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder) {
       for (const ext of extensions) {
-        const potentialFile = path.join(inputPath, `${baseComponentName}${ext}`);
+        const potentialFile = path.join(
+          inputPath,
+          `${baseComponentName}${ext}`
+        );
         const candidate = resolveCaseInsensitive(potentialFile);
         if (candidate && fs.existsSync(candidate)) {
           resolvedFile = candidate;
@@ -248,7 +317,9 @@ export async function add(component, options = {}) {
 
     if (!resolvedFolder && !resolvedFile) {
       console.error(chalk.red("Component not found in the given path."));
-      console.error(chalk.red(`   Tried: ${potentialFolder} and file variants`));
+      console.error(
+        chalk.red(`   Tried: ${potentialFolder} and file variants`)
+      );
       process.exit(1);
     }
 
@@ -257,15 +328,19 @@ export async function add(component, options = {}) {
 
     await fs.ensureDir(destDir);
     if (resolvedFolder) {
-      await fs.copy(resolvedFolder, destDir);
+      await copyWithPrompt(resolvedFolder, destDir);
     } else if (resolvedFile) {
-      const fileName = path.basename(resolvedFile);
-      await fs.copy(resolvedFile, path.join(destDir, fileName));
+      const destFile = path.join(destDir, path.basename(resolvedFile));
+      await copyWithPrompt(resolvedFile, destFile);
     }
 
     await ensureUtils(baseDir);
     await ensureDeps();
-    console.log(chalk.bold.green(`\nImported "${component}" from local alias into ${destDir}`));
+    console.log(
+      chalk.bold.green(
+        `\nImported "${component}" from local device into ${destDir}`
+      )
+    );
     return;
   }
 
@@ -284,7 +359,9 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, { headers: { Accept: "application/vnd.github.v3+json" } });
+    const res = await fetch(apiUrl, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+    });
     if (!res.ok) {
       console.error(chalk.red(`Component "${component}" not found in:`));
       console.error(chalk.red(`   ${owner}/${repo}@${branch}/${basePath}`));
@@ -297,8 +374,9 @@ export async function add(component, options = {}) {
     for (const file of files) {
       if (file.type === "file") {
         const content = await (await fetch(file.download_url)).text();
-        await fs.outputFile(path.join(destinationDir, file.name), content);
-        console.log(chalk.green(`Added ${file.name}`));
+        const filePath = path.join(destinationDir, file.name);
+        await fs.outputFile(filePath, content);
+        await copyWithPrompt(filePath, filePath);
       }
     }
 
@@ -306,7 +384,9 @@ export async function add(component, options = {}) {
     await ensureDeps();
 
     console.log(
-      chalk.bold.green(`\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`)
+      chalk.bold.green(
+        `\nInstalled "${component}" into ${baseDir}/components/ui/${component}/`
+      )
     );
   } catch (err) {
     console.error(chalk.red("Error fetching component:"), err.message);
