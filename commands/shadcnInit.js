@@ -51,7 +51,7 @@ function mergeJSON(filepath, data) {
       MAIN INIT
 ---------------------------- */
 export async function shadcnInit() {
-  console.log(chalk.cyan("\n⚙ Setting up ShadCN UI (manual mode)…\n"));
+  console.log(chalk.cyan("\n Setting up ShadCN UI (manual mode)…\n"));
 
   const pm = getPM();
 
@@ -95,7 +95,7 @@ export async function shadcnInit() {
     },
   });
 
-  console.log(chalk.green("✔ Added ShadCN path aliases"));
+  console.log(chalk.green("Added ShadCN path aliases"));
 
   /* ----------------------------
      3. Update globals.css
@@ -135,7 +135,7 @@ export async function shadcnInit() {
 `;
 
   appendIfMissing(globalsPath, shadcnStyles);
-  console.log(chalk.green("✔ Updated globals.css"));
+  console.log(chalk.green("Updated globals.css"));
 
   /* ----------------------------
      4. lib/utils.ts (cn helper)
@@ -151,7 +151,7 @@ export function cn(...inputs: ClassValue[]) {
 `;
 
   appendIfMissing(utilsPath, cnHelper);
-  console.log(chalk.green("✔ Created cn() helper"));
+  console.log(chalk.green("Created cn() helper"));
 
   /* ----------------------------
      5. components.json
@@ -179,8 +179,29 @@ export function cn(...inputs: ClassValue[]) {
   };
 
   mergeJSON("components.json", componentsJson);
-  console.log(chalk.green("✔ Created components.json"));
+  console.log(chalk.green("Created components.json"));
 
-  console.log(chalk.green("\n🎉 ShadCN setup complete!\n"));
+  console.log(chalk.green("\nShadCN setup complete!\n"));
   console.log(chalk.white("You can now run:\n  npx koras-ui add alert --from shadcn\n"));
+}
+
+export async function initializeShadcn() {
+  return await shadcnInit();
+}
+
+/* -----------------------------------------------------------
+   Shadcn to install individual components
+------------------------------------------------------------ */
+export async function addShadcnComponent(component) {
+  console.log(chalk.cyan(`Installing ShadCN component "${component}"...`));
+
+  try {
+    // Run official ShadCN CLI command
+    execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
+
+    console.log(chalk.green(`Successfully installed "${component}".`));
+  } catch (err) {
+    console.error(chalk.red(`Failed to install component "${component}".`));
+    console.error(err.message);
+  }
 }
