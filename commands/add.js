@@ -65,8 +65,8 @@ async function ensureDeps() {
   const cmd = useYarn
     ? `yarn add ${missing.join(" ")}`
     : usePnpm
-      ? `pnpm add ${missing.join(" ")}`
-      : `npm install ${missing.join(" ")}`;
+    ? `pnpm add ${missing.join(" ")}`
+    : `npm install ${missing.join(" ")}`;
 
   try {
     execSync(cmd, { stdio: "inherit" });
@@ -195,43 +195,34 @@ export async function add(component, options = {}) {
     }
   }
 
-
   /* ----------------------------
-  Handle ShadCN components
- ---------------------------- */
+   Handle ShadCN components
+----------------------------- */
   if (fromSource && fromSource.toLowerCase() === "shadcn") {
-    console.log(chalk.cyan(`Adding "${component}" from ShadCN via npx...`));
-
-    // Ensure project is properly initialized before adding components
-    const missingSetup =
-      !fs.existsSync("tailwind.config.js") ||
-      !fs.existsSync("postcss.config.js") ||
-      !fs.existsSync("src/styles/globals.css");
-
-    if (missingSetup) {
-      console.log(chalk.yellow("Project not initialized. Running koras-ui init..."));
-      const { init } = await import("./init.js");
-      await init();
-    }
+    console.log(chalk.cyan(`Adding "${component}" from ShadCN...`));
 
     try {
-      console.log(chalk.dim(`> npx shadcn@latest add ${component}`));
+      // Import the ShadCN handler module
+      const { initializeShadcn, addShadcnComponent } = await import(
+        "./shadcnInit.js"
+      );
 
-      // Run ShadCN CLI (sync, inherits terminal output)
-      execSync(`npx shadcn@latest add ${component}`, { stdio: "inherit" });
+      // Ensure ShadCN + Tailwind setup is complete
+      console.log(chalk.yellow("Checking ShadCN setup..."));
+      await initializeShadcn();
 
-      console.log(chalk.green(`Successfully added "${component}" from ShadCN.`));
+      // Add the component
+      await addShadcnComponent(component);
+
+      console.log(
+        chalk.green(`Successfully added "${component}" from ShadCN.`)
+      );
     } catch (err) {
       console.error(chalk.red(`Failed to add "${component}" from ShadCN.`));
       console.error(chalk.red(err.message));
-      console.error(
-        chalk.yellow(
-          "Ensure your project is a React + Tailwind setup before using the ShadCN CLI."
-        )
-      );
     }
 
-    return; // prevent script from running local/github logic afterwards
+    return;
   }
 
   /* --- Handle local import --- */
@@ -326,7 +317,9 @@ export async function add(component, options = {}) {
         let writeFile = true;
 
         if (exists) {
-          writeFile = await askYesNo(`File "${filePath}" already exists. Replace it?`);
+          writeFile = await askYesNo(
+            `File "${filePath}" already exists. Replace it?`
+          );
           if (!writeFile) {
             console.log(chalk.yellow(`Skipped "${filePath}".`));
           }

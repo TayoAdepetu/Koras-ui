@@ -1,140 +1,77 @@
-// init.js
 import { execSync } from "child_process";
-import fs from "fs-extra";
+import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 
-function getPackageManager() {
-    if (fs.existsSync("yarn.lock")) return "yarn";
-    if (fs.existsSync("pnpm-lock.yaml")) return "pnpm";
-    return "npm";
-}
-
-function run(cmd) {
-    try {
-        execSync(cmd, { stdio: "inherit" });
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
 export async function init() {
-    console.log(chalk.cyan("Checking project Tailwind setup..."));
+  console.log(chalk.cyan("Checking for Tailwind setup..."));
 
-    const hasTW = fs.existsSync("tailwind.config.js");
-    const hasPostCSS = fs.existsSync("postcss.config.js");
-    const pm = getPackageManager();
+  const hasTailwind = fs.existsSync("tailwind.config.js");
+  const hasPostCSS = fs.existsSync("postcss.config.js");
 
-    /* ----------------------------
-       INSTALL TAILWIND (ShadCN style)
-    ---------------------------- */
-    if (!hasTW || !hasPostCSS) {
-        console.log(chalk.yellow("Installing Tailwind CSS (ShadCN style)..."));
+  // 1. Install Tailwind if missing
+  if (!hasTailwind) {
+    console.log(chalk.yellow("Installing Tailwind CSS..."));
+    execSync("npm install -D tailwindcss postcss autoprefixer", {
+      stdio: "inherit",
+    });
 
-        const installCmd =
-            pm === "yarn"
-                ? `yarn add -D tailwindcss postcss autoprefixer`
-                : pm === "pnpm"
-                    ? `pnpm add -D tailwindcss postcss autoprefixer`
-                    : `npm install -D tailwindcss postcss autoprefixer`;
+    console.log(chalk.yellow("Generating Tailwind config..."));
+    execSync("npx tailwindcss init -p", { stdio: "inherit" });
+  }
 
-        run(installCmd);
+  // 2. Patch Tailwind content paths safely
+  const configPath = path.resolve("tailwind.config.js");
+  if (fs.existsSync(configPath)) {
+    let config = fs.readFileSync(configPath, "utf8");
 
-        console.log(chalk.yellow("Initializing Tailwind config..."));
+    const contentPaths = [
+      `"./src/**/*.{js,ts,jsx,tsx}"`,
+      `"./components/**/*.{js,ts,jsx,tsx}"`,
+      `"./ui/**/*.{js,ts,jsx,tsx}"`,
+    ];
 
-        // Attempt normal initialization first
-        const tailwindInitOk = run(`${pm} exec tailwindcss init -p`);
+    // Detect CJS or ESM
+    const isESM = config.includes("export default");
 
-        if (!tailwindInitOk) {
-            console.log(
-                chalk.red("⚠ Failed to run 'tailwindcss init -p'. Creating config manually...")
-            );
+    if (!config.includes("./src/") && !config.includes("./components/")) {
+      const updated = config.replace(
+        /content:\s*\[[^\]]*\]/,
+        `content: [\n    ${contentPaths.join(",\n    ")}\n  ]`
+      );
 
-            // Write fallback tailwind.config.js
-            fs.writeFileSync(
-                "tailwind.config.js",
-                `/** @type {import('tailwindcss').Config} */
-module.exports = {
-  darkMode: ["class"],
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-};`
-            );
-
-            // Write fallback postcss.config.js
-            fs.writeFileSync(
-                "postcss.config.js",
-                `module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-};`
-            );
-
-            console.log(chalk.green("Created fallback Tailwind + PostCSS configs."));
-        }
+      fs.writeFileSync(configPath, updated);
+      console.log(chalk.green("Updated Tailwind content paths"));
     }
+  }
 
-    /* ----------------------------
-       ENSURE CORRECT CONTENT PATHS
-    ---------------------------- */
-    const twPath = path.resolve("tailwind.config.js");
-    let tw = fs.readFileSync(twPath, "utf8");
+  // 3. Ensure globals.css exists
+  const stylesDir = path.resolve("src/styles");
+  fs.mkdirSync(stylesDir, { recursive: true });
 
-    const requiredContent = `
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  `;
-
-    if (!tw.includes("./src/**/*")) {
-        tw = tw.replace(
-            /content:\s*\[[\s\S]*?\]/,
-            `content: [${requiredContent}]`
-        );
-        fs.writeFileSync(twPath, tw);
-        console.log(chalk.green("Updated Tailwind content paths (ShadCN-compatible)."));
-    }
-
-    /* ----------------------------
-       CREATE global.css THE SHADCN WAY
-    ---------------------------- */
-    const stylesDir = "src/styles";
-    const globals = path.join(stylesDir, "globals.css");
-
-    await fs.ensureDir(stylesDir);
-
-    if (!fs.existsSync(globals)) {
-        fs.writeFileSync(
-            globals,
-            `@tailwind base;
+  const cssFile = path.join(stylesDir, "globals.css");
+  if (!fs.existsSync(cssFile)) {
+    fs.writeFileSync(
+      cssFile,
+      `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base design tokens */
+/* Koras UI base styles */
 :root {
   --radius: 0.5rem;
 }`
-        );
-
-        console.log(chalk.green("Created src/styles/globals.css"));
-    }
-
-    console.log(chalk.green("\nKoras UI initialized successfully!"));
-    console.log(
-        chalk.white(`
-Import styles in your app root:
-  import "@/styles/globals.css"
-
-You can now run:
-  npx koras-ui add alert --from shadcn
-`)
     );
+    console.log(chalk.green("Created src/styles/globals.css"));
+  }
+
+  console.log(chalk.green("\n✔ Koras UI initialized successfully!\n"));
+  console.log(chalk.white(`
+Next steps:
+1. Import global styles in your main file:
+   import "@/styles/globals.css";
+
+2. Add your first component:
+   npx koras-ui add button
+`));
 }
