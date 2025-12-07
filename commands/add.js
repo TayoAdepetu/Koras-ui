@@ -65,16 +65,22 @@ async function ensureDeps() {
   const cmd = useYarn
     ? `yarn add ${missing.join(" ")}`
     : usePnpm
-    ? `pnpm add ${missing.join(" ")}`
-    : `npm install ${missing.join(" ")}`;
+      ? `pnpm add ${missing.join(" ")}`
+      : `npm install ${missing.join(" ")}`;
 
   try {
     execSync(cmd, { stdio: "inherit" });
     console.log(chalk.green("Installed dependencies"));
-  } catch {
-    console.log(chalk.red("Failed automatic install. Run manually:"));
-    console.log(chalk.white(`   ${cmd}`));
+  } catch (err) {
+    console.log(chalk.red("Dependency installation failed."));
+    console.log(chalk.yellow("Possible causes:"));
+    console.log(" - Missing internet connection");
+    console.log(" - No package manager permissions");
+    console.log(" - Corrupted lock files");
+    console.log("\nError message:");
+    console.log(chalk.dim(err.message));
   }
+
 }
 
 /* ----------------------------
@@ -152,6 +158,35 @@ function resolveAlias(aliasName) {
     return { type: "local", value: aliasValue };
   } catch {
     return null;
+  }
+}
+
+async function safeFetch(url, options = {}) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    return response;
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error(
+        "Network request timed out. Please check your connection."
+      );
+    }
+
+    if (err.code === "ENOTFOUND" || err.message.includes("getaddrinfo")) {
+      throw new Error(
+        "Network error: Unable to reach server. Check your internet."
+      );
+    }
+
+    throw err;
   }
 }
 
@@ -271,8 +306,8 @@ export async function add(component, options = {}) {
       await copyWithPrompt(resolvedFile, destFile);
     }
 
-    await ensureUtils(baseDir);
-    await ensureDeps();
+    // await ensureUtils(baseDir);
+    // await ensureDeps();
     console.log(
       chalk.bold.green(
         `\nImported "${component}" from local device into ${destDir}`
@@ -296,12 +331,41 @@ export async function add(component, options = {}) {
   const destinationDir = path.resolve(`${baseDir}/components/ui/${component}`);
 
   try {
-    const res = await fetch(apiUrl, {
-      headers: { Accept: "application/vnd.github.v3+json" },
-    });
+    let res;
+    try {
+      res = await safeFetch(apiUrl, {
+        headers: { Accept: "application/vnd.github.v3+json" },
+      });
+    } catch (err) {
+      console.error(chalk.red("\n Unable to fetch from GitHub."));
+      console.error(chalk.yellow(`Reason: ${err.message}`));
+      console.log(
+        chalk.cyan("\n Tip: Check your internet or try again in a moment.\n")
+      );
+      process.exit(1);
+    }
+
     if (!res.ok) {
-      console.error(chalk.red(`Component "${component}" not found in:`));
-      console.error(chalk.red(`   ${owner}/${repo}@${branch}/${basePath}`));
+      if (res.status === 404) {
+        console.error(
+          chalk.red(`Component "${component}" was not found in:`)
+        );
+        console.log(chalk.yellow(`${owner}/${repo}@${branch}/${basePath}`));
+        console.log(
+          chalk.cyan(
+            "\nCheck spelling or try running --list to see available components.\n"
+          )
+        );
+      } else if (res.status === 403) {
+        console.error(chalk.red("GitHub rate limit reached."));
+        console.log(
+          chalk.yellow("Try again later or authenticate using a GitHub token.")
+        );
+      } else {
+        console.error(
+          chalk.red(`GitHub request failed (status: ${res.status})`)
+        );
+      }
       process.exit(1);
     }
 
@@ -331,8 +395,10 @@ export async function add(component, options = {}) {
       }
     }
 
-    await ensureUtils(baseDir);
-    await ensureDeps();
+    if (repo === "Koras-ui" && owner === "TayoAdepetu") {
+      await ensureUtils(baseDir);
+      await ensureDeps();
+    }
 
     console.log(
       chalk.bold.green(

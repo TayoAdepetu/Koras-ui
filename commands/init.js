@@ -7,7 +7,7 @@ export async function init() {
   console.log(chalk.cyan("Checking for Tailwind setup..."));
 
   const hasTailwind = fs.existsSync("tailwind.config.js");
-  const hasPostCSS = fs.existsSync("postcss.config.js");
+  // const hasPostCSS = fs.existsSync("postcss.config.js");
 
   // 1. Install Tailwind if missing
   if (!hasTailwind) {
